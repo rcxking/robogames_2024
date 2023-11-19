@@ -10,5 +10,5 @@ use <VersaFrame.scad>
  */
 $fn = 10;
 
-versaframe();
+// Front of robot
 
