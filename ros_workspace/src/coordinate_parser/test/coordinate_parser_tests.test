@@ -1,0 +1,7 @@
+<launch>
+  <test test-name="coordinate_parser_tests" type="coordinate_parser_tests"
+    pkg="coordinate_parser">
+    <!-- GPS Coordinate Files -->
+    <!--<param name="good_file" value="~/robogames_2024/ros_workspace/src/coordinate_parser/test/good_file.txt"/>-->
+  </test>
+</launch>
