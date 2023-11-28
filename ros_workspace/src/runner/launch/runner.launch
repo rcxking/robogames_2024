@@ -1,0 +1,10 @@
+<!-- runner.launch - Starts a RoboMagellan run -->
+<launch>
+  <!-- Default file path containing mission coordinates -->
+  <arg name="filepath" default="/home/bryant/robogames_2024/mission.txt"/>
+
+  <node pkg="runner" type="runner" name="runner" required="true"
+    output="screen">
+    <param name="filepath" value="$(arg filepath)"/>
+  </node>
+</launch>

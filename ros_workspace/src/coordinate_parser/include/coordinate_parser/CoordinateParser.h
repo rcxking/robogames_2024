@@ -79,6 +79,11 @@ public:
 	 */
 	bool GetEndPoint(GPSCoordinate *end) const;
 
+	/**
+	 * @brief Displays the current mission waypoints.
+	 */
+	void DisplayMissionCoordinates() const;
+
 	// Accessors
 	std::vector<GPSCoordinate> GetWaypoints() const { return waypoints_; }
 
