@@ -9,7 +9,7 @@
 #include <catch_ros/catch.hpp>
 #include <coordinate_parser/CoordinateParser.h>
 
-#include <climits>
+#include <limits>
 #include <string>
 
 // Helper to compare 2 double precision variables
@@ -44,6 +44,24 @@ SCENARIO("A GPSCoordinate is constructed", "[GPSCoordinate]") {
 			}
 		}
 	}
+
+	GIVEN("3 GPSCoordinates") {
+		GPSCoordinate g1(1.2, 3.4);
+		GPSCoordinate g2(1.2, 3.4);
+		GPSCoordinate g3(0.0, 0.0);
+
+		WHEN("The coordinates are compared with each other") {
+			const bool res1 = (g1 == g2);
+			const bool res2 = (g2 == g3);
+			const bool res3 = (g1 == g3);
+
+			THEN("The comparisons are correct") {
+				REQUIRE(res1 == true);
+				REQUIRE(res2 == false);
+				REQUIRE(res3 == false);
+			}
+		}
+	}
 }
 
 // CoordinateParser construction tests
@@ -59,6 +77,11 @@ SCENARIO("A CoordinateParser is constructed", "[CoordinateParser]") {
   	THEN("Its member variables should be initialized correctly") {
   		REQUIRE(cp.GetWaypoints().empty() == true);
   		REQUIRE(cp.AreWaypointsSet() == false);
+
+  		// Can't get a start/end point because waypoints aren't set
+  		GPSCoordinate start, end;
+  		REQUIRE(cp.GetStartPoint(&start) == false);
+  		REQUIRE(cp.GetEndPoint(&end) == false);
   	}
   }
 
@@ -77,6 +100,11 @@ SCENARIO("A CoordinateParser is constructed", "[CoordinateParser]") {
   		THEN("The file fails to load and the waypoints do not change") {
   			REQUIRE(ret == false);
   			REQUIRE(cp.GetWaypoints().empty() == true);
+
+  			// Can't get a start/end point because waypoints aren't set
+  			GPSCoordinate start, end;
+  			REQUIRE(cp.GetStartPoint(&start) == false);
+  			REQUIRE(cp.GetEndPoint(&end) == false);
   		}
   	}
 
@@ -85,6 +113,11 @@ SCENARIO("A CoordinateParser is constructed", "[CoordinateParser]") {
   		THEN("The file fails to load and the waypoints are not updated") {
   			REQUIRE(ret == false);
   			REQUIRE(cp.GetWaypoints().empty() == true);
+
+  			// Can't get a start/end point because waypoints aren't set
+  			GPSCoordinate start, end;
+  			REQUIRE(cp.GetStartPoint(&start) == false);
+  			REQUIRE(cp.GetEndPoint(&end) == false);
   		}
   	}
 
@@ -93,6 +126,11 @@ SCENARIO("A CoordinateParser is constructed", "[CoordinateParser]") {
   		THEN("The file fails to load and the waypoints are not updated") {
   			REQUIRE(ret == false);
   			REQUIRE(cp.GetWaypoints().empty() == true);
+
+  			// Can't get a start/end point because waypoints aren't set
+  			GPSCoordinate start, end;
+  			REQUIRE(cp.GetStartPoint(&start) == false);
+  			REQUIRE(cp.GetEndPoint(&end) == false);
   		}
   	}
 
@@ -101,6 +139,13 @@ SCENARIO("A CoordinateParser is constructed", "[CoordinateParser]") {
   		THEN("The file successfully loads and the waypoints are updated") {
   			REQUIRE(ret == true);
   			REQUIRE(cp.GetWaypoints().size() == 2);
+
+  			GPSCoordinate start, end;
+  			REQUIRE(cp.GetStartPoint(&start) == true);
+  			REQUIRE(cp.GetEndPoint(&end) == true);
+
+  			REQUIRE(start == GPSCoordinate(0.0, 0.0));
+  			REQUIRE(end == GPSCoordinate(1.3, 2.4));
   		}
   	}
   }

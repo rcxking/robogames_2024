@@ -9,8 +9,8 @@
  */
 #include <coordinate_parser/CoordinateParser.h>
 
+#include <cstdio>
 #include <cstring>
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -40,8 +40,9 @@ bool CoordinateParser::LoadCoordinateFile(const std::string& filepath) {
 				latitude_doub = std::stod(latitude);
 				longitude_doub = std::stod(longitude);
 			} catch (std::invalid_argument& ex) {
-				std::cerr << "ERROR: Could not cast either: " << latitude << " or "
-						<< longitude << " into doubles" << std::endl;
+				fprintf(stderr, "%s:%d: ERROR: Could not cast either %s or %s into "
+						"doubles\n", __FUNCTION__, __LINE__, latitude.c_str(),
+						longitude.c_str());
 				return false;
 			}
 
@@ -52,16 +53,56 @@ bool CoordinateParser::LoadCoordinateFile(const std::string& filepath) {
 
 		// Ensure at least 2 waypoints (start and end) are specified
 		if (tmp.size() < 2) {
-			std::cerr << "ERROR: Less than 2 waypoints specified" << std::endl;
+			fprintf(stderr, "%s:%d: ERROR: Less than 2 waypoints specified\n",
+					__FUNCTION__, __LINE__);
 			return false;
 		} else {
 			waypoints_ = tmp;
 			return true;
 		}
 	} else {
-		std::cerr << "ERROR: Unable to open file: " << filepath.c_str() << std::endl;
+		fprintf(stderr, "%s:%d: ERROR: Unable to open file %s\n", __FUNCTION__,
+				__LINE__, filepath.c_str());
 		return false;
 	}
 }
 
+bool CoordinateParser::GetStartPoint(GPSCoordinate *start) const {
+	bool succ = false;
 
+	// nullptr check
+	if (start != nullptr) {
+		// Ensure waypoints are set
+		if (AreWaypointsSet()) {
+			// The first waypoint is the starting point
+			*start = waypoints_[0];
+			succ = true;
+		} else {
+			fprintf(stderr, "%s:%d: ERROR: waypoints not set\n", __FUNCTION__,
+					__LINE__);
+		}
+	} else {
+		fprintf(stderr, "%s:%d: ERROR: start is NULL\n", __FUNCTION__, __LINE__);
+	}
+	return succ;
+}
+
+bool CoordinateParser::GetEndPoint(GPSCoordinate *end) const {
+	bool succ = false;
+
+	// nullptr check
+	if (end != nullptr) {
+		// Ensure waypoints are set
+		if (AreWaypointsSet()) {
+			// The last waypoint is the ending point
+			*end = waypoints_[waypoints_.size() - 1];
+			succ = true;
+		} else {
+			fprintf(stderr, "%s:%d: ERROR: waypoints not set\n", __FUNCTION__,
+					__LINE__);
+		}
+	} else {
+		fprintf(stderr, "%s:%d: ERROR: end is NULL\n", __FUNCTION__, __LINE__);
+	}
+	return succ;
+}
