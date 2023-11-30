@@ -10,6 +10,8 @@
  * Bryant Pong
  * 11/25/23
  */
+#include <cmath>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -25,6 +27,19 @@ public:
 	GPSCoordinate(const double latit, const double longi) :
 		latitude(latit),
 		longitude(longi) {}
+
+	/**
+	 * @brief Checks if another GPSCoordinate is the same as this one.
+	 * @param other Second GPSCoordinate to compare with this one.
+	 * @return bool True if both latitude/longitude match; false if not.
+	 */
+	bool operator==(const GPSCoordinate &other) const {
+		const bool lat_match = std::fabs(other.latitude - latitude) <=
+				std::numeric_limits<double>::epsilon();
+		const bool long_match = std::fabs(other.longitude - longitude) <=
+				std::numeric_limits<double>::epsilon();
+		return lat_match && long_match;
+	}
 
 	//! Latitude/Longitude (degrees)
 	double latitude;
@@ -49,6 +64,20 @@ public:
 	 * @return bool True if waypoints are set; false if not.
 	 */
 	bool AreWaypointsSet() const { return !waypoints_.empty(); }
+
+	/**
+	 * @brief Gets the starting point of the mission.
+	 * @param start On success this pointer will be updated with mission's start.
+	 * @return bool True if the starting point was acquired; false on error.
+	 */
+	bool GetStartPoint(GPSCoordinate *start) const;
+
+	/**
+	 * @brief Gets the ending point of the mission.
+	 * @param end On success this pointer will be updated with mission's end.
+	 * @return bool True if the ending point was acquired; false on error.
+	 */
+	bool GetEndPoint(GPSCoordinate *end) const;
 
 	// Accessors
 	std::vector<GPSCoordinate> GetWaypoints() const { return waypoints_; }
