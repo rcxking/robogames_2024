@@ -106,3 +106,25 @@ bool CoordinateParser::GetEndPoint(GPSCoordinate *end) const {
 	}
 	return succ;
 }
+
+void CoordinateParser::DisplayMissionCoordinates() const {
+	// Ensure waypoints are set before displaying mission coordinates
+	if (AreWaypointsSet()) {
+		printf("I will be following these coordinates:\n");
+		for (size_t i = 0; i < waypoints_.size(); ++i) {
+			if (i == 0) {
+				printf("Starting ");
+			} else if (i == waypoints_.size() - 1) {
+				printf("Ending ");
+			} else {
+				printf("Intermediate ");
+			}
+			printf("Point: Latitude (deg): %f, Longitude (deg): %f\n",
+					waypoints_[i].latitude, waypoints_[i].longitude);
+		}
+	} else {
+		// ERROR: need to set waypoints before displaying mission
+		fprintf(stderr, "%s:%d: ERROR: Waypoints not set\n", __FUNCTION__,
+				__LINE__);
+	}
+}
