@@ -14,28 +14,17 @@
 // Sparkfun u-blox GNSS Library
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 
-#include <MicroNMEA.h>
-
-// Buffer storing incoming GPS data
-char nmeaBuffer[100];
-MicroNMEA nmea(nmeaBuffer, sizeof(nmeaBuffer));
-
 // Cached GPS values
 double latitude, longitude;
 
 // Have cached GPS values been updated?
 bool gps_values_found = false;
 
+// To reduce I2C traffic from the GPS, only query the GPS every second
+unsigned long last_gps_time = 0;
+
 // GPS Manager
 SFE_UBLOX_GNSS myGNSS;
-
-/**
- * @brief Helper function to store the incoming GPS data.
- * @param incoming Next incoming character data from GPS.
- */
-void SFE_UBLOX_GNSS::processNMEA(const char incoming) {
-  nmea.process(incoming);
-}
 
 /**
  * @brief Checks for a GPS coordinate and publishes it through the Serial
@@ -85,6 +74,10 @@ void ProcessCommand(const String& full_command) {
 void setup() {
   // Wait for a connection to the Raspberry Pi
   Serial.begin(115200);
+
+  // Need a short 150 ms delay otherwise Serial.print() will execute twice
+  delay(150);
+
   while (!Serial);
   Serial.println("Connection established to Raspberry Pi");
 
@@ -97,11 +90,11 @@ void setup() {
 
   /*
    * GPS Configurations:
+   * 1) Set the I2C port to output UBX only/turn off NMEA noise
+   * 2) Save only the comm. port settings to flash and BBR
    */
-  myGNSS.setI2COutput(COM_TYPE_UBX | COM_TYPE_NMEA);
+  myGNSS.setI2COutput(COM_TYPE_UBX);
   myGNSS.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT);
-  myGNSS.setProcessNMEAMask(SFE_UBLOX_FILTER_NMEA_ALL);
-  myGNSS.setProcessNMEAMask(SFE_UBLOX_FILTER_NMEA_GGA);
 }
 
 void loop() {
@@ -113,17 +106,16 @@ void loop() {
     ProcessCommand(next_command);
   }
 
-  // Update cached GPS values
-  myGNSS.checkUblox();
+  // Update cached GPS values periodically to avoid spamming I2C bus
+  if (millis() - last_gps_time > 1000) {
+    // Update time GPS values were updated
+    last_gps_time = millis();
 
-  if (nmea.isValid()) {
-    // New GPS data is available
     gps_values_found = true;
 
-    // Convert the new coordinate to degrees and save them
-    latitude = nmea.getLatitude() / 1000000.;
-    longitude = nmea.getLongitude() / 1000000.;
-    nmea.clear();
+    // Latitude and longitude need to be divided by 10^7 to get degrees
+    latitude = myGNSS.getLatitude() / 10000000.;
+    longitude = myGNSS.getLongitude() / 10000000.;
   }
 
   // Need a small delay to prevent Arduino thrashing
