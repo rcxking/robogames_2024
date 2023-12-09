@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+
+# Eclipse Workspace Files
+*.cproject
+*.project
+
+# VIM swap files
+*.swp
+
+# ROS workspace files and directories (contents change on catkin_make)
+ros_workspace/.catkin_workspace
+ros_workspace/src/CMakeLists.txt
+ros_workspace/build/
+ros_workspace/devel/
