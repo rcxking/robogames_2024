@@ -20,8 +20,11 @@
 char nmeaBuffer[100];
 MicroNMEA nmea(nmeaBuffer, sizeof(nmeaBuffer));
 
-// Serial baud rate to the Raspberry Pi.  Ensure Pi side matches this
-constexpr unsigned long BAUD_RATE = 115200;
+// Cached GPS values
+double latitude, longitude;
+
+// Have cached GPS values been updated?
+bool gps_values_found = false;
 
 // GPS Manager
 SFE_UBLOX_GNSS myGNSS;
@@ -39,17 +42,8 @@ void SFE_UBLOX_GNSS::processNMEA(const char incoming) {
  * interface.  If a coordinate cannot be found "INVALID" is returned.
  */
 void ProcessGPSCommand() {
-  // Check for new data
-  myGNSS.checkUblox();
-
-  if (nmea.isValid()) {
-    // Convert the new coordinate to degrees and send it
-    const double latitude = nmea.getLatitude() / 1000000.;
-    const double longitude = nmea.getLongitude() / 1000000.;
-    nmea.clear();
-
-    String res = String(latitude) + " " + String(longitude);
-    Serial.println(res);
+  if (gps_values_found) {
+    Serial.println(String(latitude, 6) + " " + String(longitude, 6));
   } else {
     Serial.println("INVALID");
   }
@@ -90,7 +84,7 @@ void ProcessCommand(const String& full_command) {
 
 void setup() {
   // Wait for a connection to the Raspberry Pi
-  Serial.begin(BAUD_RATE);
+  Serial.begin(115200);
   while (!Serial);
   Serial.println("Connection established to Raspberry Pi");
 
@@ -118,4 +112,20 @@ void loop() {
     next_command.trim();
     ProcessCommand(next_command);
   }
+
+  // Update cached GPS values
+  myGNSS.checkUblox();
+
+  if (nmea.isValid()) {
+    // New GPS data is available
+    gps_values_found = true;
+
+    // Convert the new coordinate to degrees and save them
+    latitude = nmea.getLatitude() / 1000000.;
+    longitude = nmea.getLongitude() / 1000000.;
+    nmea.clear();
+  }
+
+  // Need a small delay to prevent Arduino thrashing
+  delay(100);
 }
