@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="math_utils_tests" type="math_utils_tests"
+    pkg="math_utils"/>
+</launch>
