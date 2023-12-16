@@ -1,0 +1,5 @@
+<!-- arduino_connector.launch - Starts the ROS-Arduino connection node -->
+<launch>
+  <node pkg="arduino_connector" type="ArduinoConnector.py"
+    name="arduino_connector" required="true" output="screen"/>
+</launch>
