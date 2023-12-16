@@ -32,9 +32,9 @@ SFE_UBLOX_GNSS myGNSS;
  */
 void ProcessGPSCommand() {
   if (gps_values_found) {
-    Serial.println(String(latitude, 6) + " " + String(longitude, 6));
+    Serial.println("RES " + String(latitude, 6) + " " + String(longitude, 6));
   } else {
-    Serial.println("INVALID");
+    Serial.println("RES INVALID");
   }
 }
 
@@ -63,6 +63,9 @@ void ProcessCommand(const String& full_command) {
   /*
    * List of supported commands:
    * 1) GPS - Returns a string of the current latitude/longitude
+   *
+   * All commands' output should start with "RES " for easy processing on the
+   * ROS side.
    */
    if (command == "GPS") {
      ProcessGPSCommand();
