@@ -8,6 +8,8 @@
  */
 #include <cmath>
 
+namespace MathUtils {
+
 double Hav(const double theta) {
 	const double half_hav = sin(theta/2);
 	return half_hav * half_hav;
@@ -15,4 +17,6 @@ double Hav(const double theta) {
 
 double InvHav(const double theta) {
 	return 2 * asin(sqrt(theta));
+}
+
 }

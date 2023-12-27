@@ -22,7 +22,7 @@ SCENARIO("Different math utilities are called") {
 		constexpr double theta = M_PI/4.;
 
 		WHEN("The haversine is computed") {
-			const double hav = Hav(theta);
+			const double hav = MathUtils::Hav(theta);
 			THEN("The haversine is computed correctly") {
 				const double exp_hav = sin(theta/2) * sin(theta/2);
 				REQUIRE(DoubleCompare(exp_hav, hav) == true);
@@ -30,7 +30,7 @@ SCENARIO("Different math utilities are called") {
 		}
 
 		WHEN("The inverse haversine is computed") {
-			const double inv_hav = InvHav(theta);
+			const double inv_hav = MathUtils::InvHav(theta);
 			THEN("The inverse haversine is computed correctly") {
 				const double exp_inv_hav = 2 * asin(sqrt(theta));
 				REQUIRE(DoubleCompare(exp_inv_hav, inv_hav) == true);
