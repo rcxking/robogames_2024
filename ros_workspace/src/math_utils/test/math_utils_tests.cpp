@@ -37,6 +37,21 @@ SCENARIO("Different math utilities are called") {
 			}
 		}
 	}
+
+	GIVEN("A circle's origin with a known radius") {
+		// Circle is centered at (2, 2) with a radius of 2 meters
+		const MathUtils::Point2D circle_center(2.0, 2.0);
+		constexpr double circle_radius_m = 2.0;
+
+		WHEN("Intersections between the circle and line segments are computed") {
+			// This segment doesn't intersect the circle at all
+			const MathUtils::Point2D start1(0.0, 5.0);
+			const MathUtils::Point2D end1(5.0, 5.0);
+
+			const int ret1 = MathUtils::FindCircleLineIntersections(circle_center,
+
+		}
+	}
 }
 
 
