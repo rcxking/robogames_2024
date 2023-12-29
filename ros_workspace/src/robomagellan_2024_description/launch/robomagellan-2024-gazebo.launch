@@ -1,0 +1,47 @@
+<!--
+  robomagellan-2024-gazebo.launch
+
+  Launches a simulated robot in Gazebo.
+
+  Bryant Pong
+  12/31/23
+-->
+<launch>
+  <arg name="model" default="$(find robomagellan_2024_description)/urdf/robomagellan_2024.urdf.xacro"/>
+  <arg name="rvizconfig" default="$(find urdf_tutorial)/rviz/urdf.rviz"/>
+
+  <!-- Launch Gazebo and spawn the simulated robot -->
+  <include file="$(find robomagellan_2024_description)/launch/gazebo.launch">
+    <arg name="model" value="$(arg model)"/>
+  </include>
+
+  <!-- Spawn RVIZ -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
+
+  <!--
+    Spawn controllers.  These are:
+
+    1) Joint State Controller - This publishes the joint states from Gazebo into
+       ROS.
+    2) Diff Drive Controller - Provides differential drive controller.
+  -->
+  <rosparam command="load"
+            file="$(find robomagellan_2024_description)/config/joints.yaml"
+            ns="robomagellan_2024_joint_state_controller"/>
+  <rosparam command="load"
+            file="$(find robomagellan_2024_description)/config/diffdrive.yaml"
+            ns="robomagellan_2024_diff_drive_controller"/>
+
+  <node name="robomagellan_2024_controller_spawner"
+        pkg="controller_manager"
+        type="spawner"
+        args="robomagellan_2024_joint_state_controller
+              robomagellan_2024_diff_drive_controller"/>
+
+  <!-- Spawn GUI to allow user to drive the robot -->
+  <node name="rqt_robot_steering" pkg="rqt_robot_steering"
+        type="rqt_robot_steering">
+    <param name="default_topic"
+           value="/robomagellan_2024_diff_drive_controller/cmd_vel"/>
+  </node>
+</launch>

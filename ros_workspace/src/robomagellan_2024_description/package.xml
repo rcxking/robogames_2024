@@ -2,7 +2,9 @@
 <package format="2">
   <name>robomagellan_2024_description</name>
   <version>0.1.0</version>
-  <description>Contains the RoboMagellan 2024 URDF files. </description>
+  <description>
+      Contains the RoboMagellan 2024 URDF/Gazebo launch files.
+  </description>
 
   <maintainer email="rcxking@gmail.com">Bryant Pong</maintainer>
 
@@ -32,15 +34,18 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>diff_drive_controller</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>gazebo_ros_control</exec_depend>
+  <exec_depend>joint_state_controller</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>position_controllers</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rqt_robot_steering</exec_depend>
   <exec_depend>rviz</exec_depend>
+  <exec_depend>urdf_tutorial</exec_depend>
   <exec_depend>xacro</exec_depend>
-
-  <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <!-- Other tools can request additional information be placed here -->
-
-  </export>
 </package>

@@ -1,0 +1,21 @@
+<launch>
+  <arg name="model" default="$(find robomagellan_2024_description)/urdf/robomagellan_2024.urdf"/>
+  <arg name="rvizconfig" default="$(find urdf_tutorial)/rviz/urdf.rviz"/>
+
+  <include file="$(find robomagellan_2024_description)/launch/gazebo.launch">
+    <arg name="model" value="$(arg model)"/>
+  </include>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
+
+  <rosparam command="load"
+    file="$(find robomagellan_2024_description)/config/joints.yaml"
+    ns="robomagellan_2024_joint_state_controller"/>
+  <rosparam command="load"
+    file="$(find robomagellan_2024_description)/config/left_front.yaml"
+    ns="robomagellan_2024_left_front_controller"/>
+
+  <node name="robomagellan_2024_controller_spawner" pkg="controller_manager"
+    type="spawner" args="robomagellan_2024_joint_state_controller
+                         robomagellan_2024_left_front_controller"/>
+</launch>

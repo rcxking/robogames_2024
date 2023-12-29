@@ -4,7 +4,7 @@
   <arg name="gui" default="true"/>
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
-  <arg name="model" default="$(find robomagellan_2024_description)/urdf/robomagellan_2024.urdf"/>
+  <arg name="model" default="$(find robomagellan_2024_description)/urdf/robomagellan_2024.urdf.xacro"/>
 
   <!-- Launch an empty world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
