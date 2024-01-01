@@ -8,17 +8,20 @@
  * 11/25/23
  */
 #include <coordinate_parser/CoordinateParser.h>
+#include <ros/ros.h>
 
-#include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
 
-CoordinateParser::CoordinateParser() {}
+CoordinateParser::CoordinateParser() {
+	is_sim_run_ = false;
+}
 
-bool CoordinateParser::LoadCoordinateFile(const std::string& filepath) {
+bool CoordinateParser::LoadCoordinateFile(const std::string& filepath,
+		                                      const bool is_sim) {
 	// Attempt to open the file
 	std::ifstream input_file(filepath);
 	if (input_file.is_open()) {
@@ -40,9 +43,8 @@ bool CoordinateParser::LoadCoordinateFile(const std::string& filepath) {
 				latitude_doub = std::stod(latitude);
 				longitude_doub = std::stod(longitude);
 			} catch (std::invalid_argument& ex) {
-				fprintf(stderr, "%s:%d: ERROR: Could not cast either %s or %s into "
-						"doubles\n", __FUNCTION__, __LINE__, latitude.c_str(),
-						longitude.c_str());
+				ROS_ERROR("Could not cast either %s or %s into doubles",
+						latitude.c_str(), longitude.c_str());
 				return false;
 			}
 
@@ -53,16 +55,15 @@ bool CoordinateParser::LoadCoordinateFile(const std::string& filepath) {
 
 		// Ensure at least 2 waypoints (start and end) are specified
 		if (tmp.size() < 2) {
-			fprintf(stderr, "%s:%d: ERROR: Less than 2 waypoints specified\n",
-					__FUNCTION__, __LINE__);
+			ROS_ERROR("Less than 2 waypoints specified");
 			return false;
 		} else {
 			waypoints_ = tmp;
+			is_sim_run_ = is_sim;
 			return true;
 		}
 	} else {
-		fprintf(stderr, "%s:%d: ERROR: Unable to open file %s\n", __FUNCTION__,
-				__LINE__, filepath.c_str());
+		ROS_ERROR("Unable to open file %s", filepath.c_str());
 		return false;
 	}
 }
@@ -78,11 +79,10 @@ bool CoordinateParser::GetStartPoint(GPSCoordinate *start) const {
 			*start = waypoints_[0];
 			succ = true;
 		} else {
-			fprintf(stderr, "%s:%d: ERROR: waypoints not set\n", __FUNCTION__,
-					__LINE__);
+			ROS_ERROR("waypoints_ not set");
 		}
 	} else {
-		fprintf(stderr, "%s:%d: ERROR: start is NULL\n", __FUNCTION__, __LINE__);
+		ROS_ERROR("start is NULL");
 	}
 	return succ;
 }
@@ -98,11 +98,10 @@ bool CoordinateParser::GetEndPoint(GPSCoordinate *end) const {
 			*end = waypoints_[waypoints_.size() - 1];
 			succ = true;
 		} else {
-			fprintf(stderr, "%s:%d: ERROR: waypoints not set\n", __FUNCTION__,
-					__LINE__);
+			ROS_ERROR("waypoints_ not set");
 		}
 	} else {
-		fprintf(stderr, "%s:%d: ERROR: end is NULL\n", __FUNCTION__, __LINE__);
+		ROS_ERROR("end is NULL");
 	}
 	return succ;
 }
@@ -110,21 +109,37 @@ bool CoordinateParser::GetEndPoint(GPSCoordinate *end) const {
 void CoordinateParser::DisplayMissionCoordinates() const {
 	// Ensure waypoints are set before displaying mission coordinates
 	if (AreWaypointsSet()) {
-		printf("I will be following these coordinates:\n");
+		if (is_sim_run_) {
+			ROS_INFO("This is a simulation run");
+		} else {
+			ROS_INFO("This is a real robot run");
+		}
+		ROS_INFO("I will be following these coordinates:");
 		for (size_t i = 0; i < waypoints_.size(); ++i) {
+			std::stringstream next_info;
 			if (i == 0) {
-				printf("Starting ");
+				next_info << "Starting ";
 			} else if (i == waypoints_.size() - 1) {
-				printf("Ending ");
+				next_info << "Ending ";
 			} else {
-				printf("Intermediate ");
+				next_info << "Intermediate ";
 			}
-			printf("Point: Latitude (deg): %f, Longitude (deg): %f\n",
-					waypoints_[i].latitude, waypoints_[i].longitude);
+
+			if (is_sim_run_) {
+				next_info << "Point (meters): (" << waypoints_[i].latitude << ", " <<
+						waypoints_[i].longitude << ")";
+			} else {
+				next_info << "Point: Latitude (deg): " << waypoints_[i].latitude <<
+						", Longitude (deg): " << waypoints_[i].longitude;
+			}
+
+			// Need to use temporary variables to avoid dangling pointer
+			const std::string next_info_str = next_info.str();
+			const char *next_info_c_str = next_info_str.c_str();
+			ROS_INFO("%s", next_info_c_str);
 		}
 	} else {
 		// ERROR: need to set waypoints before displaying mission
-		fprintf(stderr, "%s:%d: ERROR: Waypoints not set\n", __FUNCTION__,
-				__LINE__);
+		ROS_ERROR("waypoints_ not set");
 	}
 }

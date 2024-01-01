@@ -41,7 +41,11 @@ public:
 		return lat_match && long_match;
 	}
 
-	//! Latitude/Longitude (degrees)
+	/**
+	 * Latitude/longitude (degrees) if for a real robot run.  For a simulated
+	 * robot run this coordinate will be in meters.  latitude will be the
+	 * x-coordinate; longitude will be the y-coordinate.
+	 */
 	double latitude;
 	double longitude;
 };
@@ -54,16 +58,25 @@ public:
 	/**
 	 * @brief Attempts to load and parse the coordinates in the specified file.
 	 * @param filepath String containing the full file path to load.
+	 * @param is_sim Optional parameter denoting that the requested file is for
+	 * a simulation run.
 	 * @return bool True if file loaded successfully and waypoints_ was modified;
 	 * false on failure.
 	 */
-	bool LoadCoordinateFile(const std::string& filepath);
+	bool LoadCoordinateFile(const std::string& filepath,
+			                    const bool is_sim = false);
 
 	/**
 	 * @brief Checks if waypoints are set.
 	 * @return bool True if waypoints are set; false if not.
 	 */
 	bool AreWaypointsSet() const { return !waypoints_.empty(); }
+
+	/**
+	 * @brief Is the last loaded coordinate file for a simulation run?
+	 * @return bool True if the file is for a simulation run; false otherwise.
+	 */
+	bool IsSimRun() const { return is_sim_run_; }
 
 	/**
 	 * @brief Gets the starting point of the mission.
@@ -90,5 +103,8 @@ public:
 private:
 	//! Stores the parsed GPS coordinates in the order to visit
 	std::vector<GPSCoordinate> waypoints_;
+
+	//! Is the last loaded file for a simulation run?
+	bool is_sim_run_;
 };
 #endif

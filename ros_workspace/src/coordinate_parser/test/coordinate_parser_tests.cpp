@@ -78,6 +78,9 @@ SCENARIO("A CoordinateParser is constructed", "[CoordinateParser]") {
   		REQUIRE(cp.GetWaypoints().empty() == true);
   		REQUIRE(cp.AreWaypointsSet() == false);
 
+  		// Since no file has been loaded, default is a real robot run
+  		REQUIRE(cp.IsSimRun() == false);
+
   		// Can't get a start/end point because waypoints aren't set
   		GPSCoordinate start, end;
   		REQUIRE(cp.GetStartPoint(&start) == false);
@@ -94,12 +97,15 @@ SCENARIO("A CoordinateParser is constructed", "[CoordinateParser]") {
   	const std::string empty_file_path(base_path + "empty_file.txt");
   	const std::string invalid_file_path1(base_path + "invalid_file1.txt");
   	const std::string good_file_path1(base_path + "good_file1.txt");
+  	const std::string sim_file_path1(base_path + "sim_file1.txt");
 
   	WHEN("A nonexistent file path is loaded") {
   		const bool ret = cp.LoadCoordinateFile(nonexistent_file_path);
   		THEN("The file fails to load and the waypoints do not change") {
   			REQUIRE(ret == false);
   			REQUIRE(cp.GetWaypoints().empty() == true);
+
+  			REQUIRE(cp.IsSimRun() == false);
 
   			// Can't get a start/end point because waypoints aren't set
   			GPSCoordinate start, end;
@@ -114,6 +120,8 @@ SCENARIO("A CoordinateParser is constructed", "[CoordinateParser]") {
   			REQUIRE(ret == false);
   			REQUIRE(cp.GetWaypoints().empty() == true);
 
+  			REQUIRE(cp.IsSimRun() == false);
+
   			// Can't get a start/end point because waypoints aren't set
   			GPSCoordinate start, end;
   			REQUIRE(cp.GetStartPoint(&start) == false);
@@ -126,6 +134,8 @@ SCENARIO("A CoordinateParser is constructed", "[CoordinateParser]") {
   		THEN("The file fails to load and the waypoints are not updated") {
   			REQUIRE(ret == false);
   			REQUIRE(cp.GetWaypoints().empty() == true);
+
+  			REQUIRE(cp.IsSimRun() == false);
 
   			// Can't get a start/end point because waypoints aren't set
   			GPSCoordinate start, end;
@@ -140,12 +150,36 @@ SCENARIO("A CoordinateParser is constructed", "[CoordinateParser]") {
   			REQUIRE(ret == true);
   			REQUIRE(cp.GetWaypoints().size() == 2);
 
+  			REQUIRE(cp.IsSimRun() == false);
+
   			GPSCoordinate start, end;
   			REQUIRE(cp.GetStartPoint(&start) == true);
   			REQUIRE(cp.GetEndPoint(&end) == true);
 
   			REQUIRE(start == GPSCoordinate(0.0, 0.0));
   			REQUIRE(end == GPSCoordinate(1.3, 2.4));
+  		}
+  	}
+
+  	WHEN("A file for a simulation run is loaded") {
+  		const bool ret = cp.LoadCoordinateFile(sim_file_path1, true);
+  		THEN("The file successfully loads and the waypoints are updated") {
+  			REQUIRE(ret == true);
+  			REQUIRE(cp.GetWaypoints().size() == 3);
+
+  			REQUIRE(cp.IsSimRun() == true);
+
+  			// Reusing GPSCoordinate for relative coordinates
+  			const std::vector<GPSCoordinate> expected_waypoints =
+  				{GPSCoordinate(1.0, 2.0), GPSCoordinate(3.0, 4.0),
+  						GPSCoordinate(5.0, 6.0)};
+
+  			const std::vector<GPSCoordinate> waypoints = cp.GetWaypoints();
+  			REQUIRE(expected_waypoints.size() == waypoints.size());
+
+  			for (size_t i = 0; i < waypoints.size(); ++i) {
+  				REQUIRE(expected_waypoints[i] == waypoints[i]);
+  			}
   		}
   	}
   }
