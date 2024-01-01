@@ -7,6 +7,7 @@
  * 11/27/23
  */
 #include <coordinate_parser/CoordinateParser.h>
+#include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
 
 #include <string>
@@ -53,8 +54,20 @@ int main(int argc, char **argv) {
 		ROS_INFO("Starting run");
 	}
 
-	while (ros::ok()) {
+	ROS_INFO("%s:%d: Starting sanity check", __FUNCTION__, __LINE__);
 
+	// Sanity check: Send velocity command to simulator
+	geometry_msgs::Twist vel_cmd;
+	vel_cmd.linear.x = 2.0;
+
+	ros::Publisher vel_pub = nh.advertise<geometry_msgs::Twist>("/robomagellan_2024_diff_drive_controller/cmd_vel", 1);
+
+	ros::Rate loop_rate(10);
+	while (ros::ok()) {
+		ROS_INFO("%s:%d: Publishing to cmd_vel", __FUNCTION__, __LINE__);
+	  vel_pub.publish(vel_cmd);
+		ros::spinOnce();
+		loop_rate.sleep();
 	}
 	return 0;
 }
