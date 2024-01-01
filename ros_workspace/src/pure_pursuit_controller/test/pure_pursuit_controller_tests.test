@@ -1,0 +1,5 @@
+<launch>
+  <test test-name="pure_pursuit_controller_tests"
+        type="pure_pursuit_controller_tests"
+        pkg="pure_pursuit_controller"/>
+</launch>

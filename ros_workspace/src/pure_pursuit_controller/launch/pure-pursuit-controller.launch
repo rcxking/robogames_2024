@@ -1,0 +1,14 @@
+<!--
+  pure-pursuit-controller.launch
+
+  Starts the Pure Pursuit Trajectory Controller node.
+
+  Bryant Pong
+  1/4/24
+-->
+
+<launch>
+  <node name="pure_pursuit_controller" type="pure_pursuit_controller"
+        pkg="pure_pursuit_controller" required="true"/>
+</launch>
+
