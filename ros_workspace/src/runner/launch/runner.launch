@@ -3,8 +3,12 @@
   <!-- Default file path containing mission coordinates -->
   <arg name="filepath" default="/home/bryant/robogames_2024/mission.txt"/>
 
+  <!-- Is this running on a real robot or simulation? -->
+  <arg name="use_sim" default="false"/>
+
   <node pkg="runner" type="runner" name="runner" required="true"
     output="screen">
     <param name="filepath" value="$(arg filepath)"/>
+    <param name="use_sim" value="$(arg use_sim)"/>
   </node>
 </launch>
