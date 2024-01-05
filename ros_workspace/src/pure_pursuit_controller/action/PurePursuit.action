@@ -1,6 +1,8 @@
-# Path to follow (world coordinates)
+# Goal Definition: Path to follow (world coordinates)
 nav_msgs/Path path
 ---
-# TODO: Add result
+# TODO: Result
+bool result
 ---
 # TODO: Add feedback
+bool feedback

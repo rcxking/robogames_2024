@@ -9,6 +9,8 @@
 #ifndef __PURE_PURSUIT_CONTROLLER_H__
 #define __PURE_PURSUIT_CONTROLLER_H__
 
+#include <actionlib/server/simple_action_server.h>
+#include <pure_pursuit_controller/PurePursuitAction.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
@@ -19,7 +21,14 @@
 class PurePursuitController {
 public:
 	//! Default Constructor
-	PurePursuitController();
+	PurePursuitController() :
+		nh_("~"),
+		as_(nh_, "pure_pursuit_controller", boost::bind(&PurePursuitController::executeCB, this, _1), false) {
+		// TODO: This should be a ROS parameter
+		odom_sub_ = nh_.subscribe("/robomagellan_2024_diff_drive_controller/odom", 100, &PurePursuitController::OdometryCallback, this);
+
+		global_path_pub_ = nh_.advertise<nav_msgs::Path>("global_path", 1, true);
+	}
 
 	/**
 	 * @brief Main loop for the Pure Pursuit Controller.
@@ -59,6 +68,8 @@ private:
 	 */
 	void OdometryCallback(const nav_msgs::Odometry::ConstPtr &data);
 
+	void executeCB(const pure_pursuit_controller::PurePursuitGoalConstPtr &goal);
+
 	/**
 	 * @brief Callback to have the controller follow the specified path.
 	 * @param path The path to follow.
@@ -67,6 +78,9 @@ private:
 
 	//! Node Handle to subscribe and publish velocity commands
 	ros::NodeHandle nh_;
+
+	//! Action Server to handle requests to follow a new plan
+	actionlib::SimpleActionServer<pure_pursuit_controller::PurePursuitAction> as_;
 
 	//! Subscriber to the odometry data
 	ros::Subscriber odom_sub_;

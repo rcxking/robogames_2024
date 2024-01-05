@@ -8,6 +8,7 @@ add_compile_options(-std=c++11 -Wall -Werror)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  actionlib
   actionlib_msgs
   catch_ros
   genmsg
@@ -17,6 +18,10 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rostest
   std_msgs
+)
+
+find_package(Boost REQUIRED COMPONENTS
+  system
 )
 
 ################################################
@@ -120,6 +125,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 ## Add cmake target dependencies of the library

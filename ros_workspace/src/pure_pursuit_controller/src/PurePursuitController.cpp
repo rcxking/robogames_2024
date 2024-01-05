@@ -14,15 +14,6 @@
 
 #include <cmath>
 
-PurePursuitController::PurePursuitController() {
-	nh_ = ros::NodeHandle("~");
-
-	// TODO: This should be a ROS parameter
-	odom_sub_ = nh_.subscribe("/robomagellan_2024_diff_drive_controller/odom", 100, &PurePursuitController::OdometryCallback, this);
-
-	global_path_pub_ = nh_.advertise<nav_msgs::Path>("global_path", 1, true);
-}
-
 void PurePursuitController::spin() {
 	ROS_INFO("%s:%d: Pure Pursuit Controller ready", __FUNCTION__, __LINE__);
 	ros::spin();
@@ -99,6 +90,10 @@ void PurePursuitController::OdometryCallback(const nav_msgs::Odometry::ConstPtr 
 	// Save the robot's current pose and velocity
 	current_robot_pose_ = data->pose.pose;
 	current_robot_vel_ = data->twist.twist;
+}
+
+void PurePursuitController::executeCB(const pure_pursuit_controller::PurePursuitGoalConstPtr &goal) {
+
 }
 
 
