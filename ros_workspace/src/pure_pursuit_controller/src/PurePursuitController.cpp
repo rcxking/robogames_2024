@@ -7,12 +7,22 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
 #include <pure_pursuit_controller/PurePursuitController.h>
 #include <ros/ros.h>
 
 #include <cmath>
 
 PurePursuitController::PurePursuitController() {
+	nh_ = ros::NodeHandle("~");
+
+	// TODO: This should be a ROS parameter
+	odom_sub_ = nh_.subscribe("/robomagellan_2024_diff_drive_controller/odom", 100, &PurePursuitController::OdometryCallback, this);
+}
+
+void PurePursuitController::spin() {
+	ROS_INFO("%s:%d: Pure Pursuit Controller ready", __FUNCTION__, __LINE__);
+	ros::spin();
 }
 
 bool PurePursuitController::FindCircleLineIntersections(
@@ -77,6 +87,12 @@ geometry_msgs::Twist PurePursuitController::ComputeVelocityCommands(
 	// Set the final velocity command
 	geometry_msgs::Twist cmd_vel;
 	return cmd_vel;
+}
+
+void PurePursuitController::OdometryCallback(const nav_msgs::Odometry::ConstPtr &data) {
+	// Save the robot's current pose and velocity
+	current_robot_pose_ = data->pose.pose;
+	current_robot_vel_ = data->twist.twist;
 }
 
 

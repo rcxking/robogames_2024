@@ -12,11 +12,18 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
+#include <ros/ros.h>
 
 class PurePursuitController {
 public:
 	//! Default Constructor
 	PurePursuitController();
+
+	/**
+	 * @brief Main loop for the Pure Pursuit Controller.
+	 */
+	void spin();
 
 	/**
 	 * @brief Finds the intersections between a circle and a line segment.
@@ -46,5 +53,21 @@ public:
 			const geometry_msgs::Twist &velocity) const;
 
 private:
+	/**
+	 * @brief Callback to acquire velocity and position data.
+	 */
+	void OdometryCallback(const nav_msgs::Odometry::ConstPtr &data);
+
+	//! Node Handle to subscribe and publish velocity commands
+	ros::NodeHandle nh_;
+
+	//! Subscriber to the odometry data
+	ros::Subscriber odom_sub_;
+
+	//! Current robot pose (world coordinates)
+	geometry_msgs::Pose current_robot_pose_;
+
+	//! Current robot velocity (linear: m/s; angular: rad/s)
+	geometry_msgs::Twist current_robot_vel_;
 };
 #endif
