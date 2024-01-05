@@ -1,0 +1,6 @@
+# Path to follow (world coordinates)
+nav_msgs/Path path
+---
+# TODO: Add result
+---
+# TODO: Add feedback
