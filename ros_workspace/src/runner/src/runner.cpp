@@ -54,6 +54,7 @@ int main(int argc, char **argv) {
 		ROS_INFO("Starting run");
 	}
 
+#if 0
 	ROS_INFO("%s:%d: Starting sanity check", __FUNCTION__, __LINE__);
 
 	// Sanity check: Send velocity command to simulator
@@ -69,6 +70,11 @@ int main(int argc, char **argv) {
 		ros::spinOnce();
 		loop_rate.sleep();
 	}
+#endif
+
+	//
+
+	ros::spin();
 	return 0;
 }
 

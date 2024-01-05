@@ -9,6 +9,7 @@ add_compile_options(-std=c++11 -Wall -Werror)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   coordinate_parser
+  pure_pursuit_controller
   roscpp
   std_msgs
 )
@@ -94,12 +95,13 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS 
+  INCLUDE_DIRS
     include
 #  LIBRARIES runner
   CATKIN_DEPENDS
-    coordinate_parser 
-    roscpp 
+    coordinate_parser
+    pure_pursuit_controller
+    roscpp
     std_msgs
 )
 
@@ -122,12 +124,12 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(runner 
+add_executable(runner
   src/runner.cpp
 )
 target_link_libraries(runner
   ${catkin_LIBRARIES}
-) 
+)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
