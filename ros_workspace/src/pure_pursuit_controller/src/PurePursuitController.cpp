@@ -93,7 +93,10 @@ void PurePursuitController::OdometryCallback(const nav_msgs::Odometry::ConstPtr 
 }
 
 void PurePursuitController::executeCB(const pure_pursuit_controller::PurePursuitGoalConstPtr &goal) {
-
+	ROS_INFO("%s:%d: Received new plan to follow", __FUNCTION__, __LINE__);
+	// When a new plan is set, save it and publish it for visualizations
+	global_path_ = goal->path;
+	global_path_pub_.publish(global_path_);
 }
 
 
