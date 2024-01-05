@@ -9,6 +9,6 @@
 
 <launch>
   <node name="pure_pursuit_controller" type="pure_pursuit_controller"
-        pkg="pure_pursuit_controller" required="true"/>
+        pkg="pure_pursuit_controller" required="true" output="screen"/>
 </launch>
 
