@@ -13,6 +13,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/Path.h>
 #include <ros/ros.h>
 
 class PurePursuitController {
@@ -58,6 +59,12 @@ private:
 	 */
 	void OdometryCallback(const nav_msgs::Odometry::ConstPtr &data);
 
+	/**
+	 * @brief Callback to have the controller follow the specified path.
+	 * @param path The path to follow.
+	 */
+	//void
+
 	//! Node Handle to subscribe and publish velocity commands
 	ros::NodeHandle nh_;
 
@@ -69,5 +76,11 @@ private:
 
 	//! Current robot velocity (linear: m/s; angular: rad/s)
 	geometry_msgs::Twist current_robot_vel_;
+
+	//! Path to follow (in world coordinates)
+	nav_msgs::Path global_path_;
+
+	//! Global plan publisher
+	ros::Publisher global_path_pub_;
 };
 #endif

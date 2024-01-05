@@ -8,6 +8,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/Path.h>
 #include <pure_pursuit_controller/PurePursuitController.h>
 #include <ros/ros.h>
 
@@ -18,6 +19,8 @@ PurePursuitController::PurePursuitController() {
 
 	// TODO: This should be a ROS parameter
 	odom_sub_ = nh_.subscribe("/robomagellan_2024_diff_drive_controller/odom", 100, &PurePursuitController::OdometryCallback, this);
+
+	global_path_pub_ = nh_.advertise<nav_msgs::Path>("global_path", 1, true);
 }
 
 void PurePursuitController::spin() {
@@ -83,6 +86,9 @@ bool PurePursuitController::FindCircleLineIntersections(
 geometry_msgs::Twist PurePursuitController::ComputeVelocityCommands(
 															const geometry_msgs::Pose &pose,
 															const geometry_msgs::Twist &velocity) const {
+	// TODO: Find the lookahead distance based on the robot's current velocity
+	//const double lookahead_dist = 0.1;
+
 
 	// Set the final velocity command
 	geometry_msgs::Twist cmd_vel;
