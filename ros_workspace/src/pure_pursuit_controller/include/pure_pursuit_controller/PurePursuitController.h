@@ -10,6 +10,8 @@
 #define __PURE_PURSUIT_CONTROLLER_H__
 
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Twist.h>
 
 class PurePursuitController {
 public:
@@ -30,6 +32,18 @@ public:
 			                             const geometry_msgs::Point &pt2,
 																	 const double r,
 																	 geometry_msgs::Point *lookahead_pt) const;
+
+	/**
+	 * @brief Computes the best velocity command given the robot's current pose
+	 * and velocity.
+	 *
+	 * @param pose Current robot pose
+	 * @param velocity Current robot velocity
+	 * @return geometry_msgs::Twist linear/velocity command
+	 */
+	geometry_msgs::Twist ComputeVelocityCommands(
+			const geometry_msgs::Pose &pose,
+			const geometry_msgs::Twist &velocity) const;
 
 private:
 };

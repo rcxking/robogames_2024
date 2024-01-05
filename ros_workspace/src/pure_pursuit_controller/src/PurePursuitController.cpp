@@ -5,6 +5,8 @@
  *      Author: bryant
  */
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Twist.h>
 #include <pure_pursuit_controller/PurePursuitController.h>
 #include <ros/ros.h>
 
@@ -66,6 +68,15 @@ bool PurePursuitController::FindCircleLineIntersections(
 		ROS_ERROR("%s:%d: ERROR: lookahead_pt is NULL", __FUNCTION__, __LINE__);
 	}
 	return lookahead_found;
+}
+
+geometry_msgs::Twist PurePursuitController::ComputeVelocityCommands(
+															const geometry_msgs::Pose &pose,
+															const geometry_msgs::Twist &velocity) const {
+
+	// Set the final velocity command
+	geometry_msgs::Twist cmd_vel;
+	return cmd_vel;
 }
 
 
