@@ -1,0 +1,3 @@
+[submodule "ros_workspace/src/navigation"]
+	path = ros_workspace/src/navigation
+	url = https://github.com/rcxking/navigation
