@@ -7,7 +7,7 @@
  * On an Arduino Mega, these pins are: 2, 3, 18-21
  * On an Arduino Uno, these pins are: 2, 3
  */
-Encoder leftEncoder(18, 19);
+Encoder leftEncoder(19, 18);
 Encoder rightEncoder(20, 21);
 
 void setup() {
