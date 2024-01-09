@@ -37,10 +37,10 @@ SFE_UBLOX_GNSS myGNSS;
  * On an Arduino Mega, these pins are: 2, 3, 18-21.  However, pins 20 and 21 are
  * (respectively) SDA/SCL which are used for the I2C bus.
  */
-constexpr int LEFT_ENCODER_CHAN_A = 2;
-constexpr int LEFT_ENCODER_CHAN_B = 3;
-constexpr int RIGHT_ENCODER_CHAN_A = 18;
-constexpr int RIGHT_ENCODER_CHAN_B = 19;
+constexpr int LEFT_ENCODER_CHAN_A = 3;
+constexpr int LEFT_ENCODER_CHAN_B = 2;
+constexpr int RIGHT_ENCODER_CHAN_A = 19;
+constexpr int RIGHT_ENCODER_CHAN_B = 18;
 
 Encoder leftEncoder(LEFT_ENCODER_CHAN_A, LEFT_ENCODER_CHAN_B);
 Encoder rightEncoder(RIGHT_ENCODER_CHAN_A, RIGHT_ENCODER_CHAN_B);
@@ -124,18 +124,20 @@ void setup() {
 
   // Establish GPS connection; on failure stay in setup()
   Wire.begin();
+  #if 0
   if (myGNSS.begin() == false) {
     Serial.println(F("ERROR: u-blox GNSS module not detected at default I2C address"));
     while (1);
   }
+  #endif
 
   /*
    * GPS Configurations:
    * 1) Set the I2C port to output UBX only/turn off NMEA noise
    * 2) Save only the comm. port settings to flash and BBR
    */
-  myGNSS.setI2COutput(COM_TYPE_UBX);
-  myGNSS.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT);
+  //myGNSS.setI2COutput(COM_TYPE_UBX);
+  //myGNSS.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT);
 
   // Reset the encoders to home position
   leftEncoder.write(0);
@@ -150,7 +152,7 @@ void loop() {
     next_command.trim();
     ProcessCommand(next_command);
   }
-
+#if 0
   // Update cached GPS values periodically to avoid spamming I2C bus
   if (millis() - last_gps_time > 1000) {
     // Update time GPS values were updated
@@ -162,6 +164,7 @@ void loop() {
     latitude = myGNSS.getLatitude() / 10000000.;
     longitude = myGNSS.getLongitude() / 10000000.;
   }
+#endif
 
   // Update encoder readings
   left_encoder_ticks = leftEncoder.read();

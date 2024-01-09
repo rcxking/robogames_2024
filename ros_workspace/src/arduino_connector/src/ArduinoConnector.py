@@ -30,8 +30,16 @@ class ArduinoConnector():
         self._last_gps_query_time = rospy.Time.now()
 
         '''
+        Current encoder ticks.  Positive ticks indicate that the motor is moving
+        forward; negative ticks indicate the motor is moving backward.
+        '''
+        self._left_encoder_ticks = 0
+        self._right_encoder_ticks = 0
+
+        '''
         Publishers:
         1) GPS containing current latitude/longitude
+        2) Current left/right encoder ticks
         '''
         self._gps_pub = rospy.Publisher('current_gps_location', GPS, queue_size=10)
 
@@ -136,7 +144,7 @@ class ArduinoConnector():
         rospy.loginfo('Starting Arduino Connector MainLoop()')
 
         while not rospy.is_shutdown():
-            self.QueryGPS()
+            #self.QueryGPS()
             rate.sleep()
 
 if __name__ == '__main__':
