@@ -7,7 +7,7 @@
 # Bryant Pong
 # 12/8/23
 
-from arduino_connector.msg import GPS
+from arduino_connector.msg import GPS, Encoders
 
 import rospy
 import serial
@@ -30,10 +30,24 @@ class ArduinoConnector():
         self._last_gps_query_time = rospy.Time.now()
 
         '''
+        Current encoder ticks.  Positive ticks indicate that the motor is moving
+        forward; negative ticks indicate the motor is moving backward.
+        '''
+        self._left_encoder_ticks = 0
+        self._right_encoder_ticks = 0
+
+        # Last encoders query time
+        self._last_encoders_query_time = rospy.Time.now()
+
+        '''
         Publishers:
         1) GPS containing current latitude/longitude
+        2) Current left/right encoder ticks
         '''
-        self._gps_pub = rospy.Publisher('current_gps_location', GPS, queue_size=10)
+        self._gps_pub = rospy.Publisher('current_gps_location', GPS,
+                queue_size=10)
+        self._encoders_pub = rospy.Publisher('encoder_ticks', Encoders,
+                queue_size=10)
 
     '''
     Establishes a connection to the Arduino.  The Arduino listens on the
@@ -126,17 +140,58 @@ class ArduinoConnector():
         self._gps_pub.publish(gps_msg)
 
     '''
+    Helper function to query encoder ticks.
+    '''
+    def QueryEncoders(self):
+        # To prevent spamming for encoder ticks ask periodically
+        # TODO: Make this a parameter.
+        if rospy.Time.now() - self._last_encoders_query_time >= rospy.Duration(0.001):
+            rospy.loginfo('Querying current encoders')
+            self._ser.write('ENC'.encode())
+
+            # Read Arduino lines until RES Is found
+            res_str = self.ReadLinesUntil('RES ')
+
+            # Ensure INVALID wasn't received
+            if not 'INVALID' in res_str:
+                # Response string is of the form RES <left encoder ticks> <right encoder ticks>
+                split_res_str = res_str.split(' ')
+
+                self._left_encoder_ticks = int(split_res_str[1])
+                self._right_encoder_ticks = int(split_res_str[2])
+
+                rospy.loginfo('Left Encoder Ticks: ' + str(self._left_encoder_ticks) +
+                              ' Right Encoder Ticks: ' + str(self._right_encoder_ticks))
+            self._last_encoders_query_time = rospy.Time.now()
+
+            # Publish new encoder ticks
+            enc_msg = Encoders()
+            enc_msg.stamp = rospy.Time.now()
+            enc_msg.left_ticks = self._left_encoder_ticks
+            enc_msg.right_ticks = self._right_encoder_ticks
+            self._encoders_pub.publish(enc_msg)
+
+    '''
     Main loop.  These tasks will be executed sequentially until the node
     shuts down.
     '''
     def MainLoop(self):
         # Polling rate (Hz) TODO: Make this a parameter
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(100)
 
         rospy.loginfo('Starting Arduino Connector MainLoop()')
 
+        # Enable/Disable features as needed
+        enable_gps = rospy.get_param('~enable_gps')
+        enable_encoders = rospy.get_param('~enable_encoders')
+
+        rospy.loginfo('enable_gps: ' + str(enable_gps) + '; enable_encoders: ' + str(enable_encoders))
+
         while not rospy.is_shutdown():
-            self.QueryGPS()
+            if enable_gps:
+                self.QueryGPS()
+            if enable_encoders:
+                self.QueryEncoders()
             rate.sleep()
 
 if __name__ == '__main__':
