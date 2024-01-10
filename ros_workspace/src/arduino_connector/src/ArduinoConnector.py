@@ -42,9 +42,13 @@ class ArduinoConnector():
         1) GPS containing current latitude/longitude
         2) Current left/right encoder ticks
         '''
-        self._gps_pub = rospy.Publisher('current_gps_location', GPS,
+        self._gps_pub = rospy.Publisher(
+                '/arduino_connector/current_gps_location',
+                GPS,
                 queue_size=10)
-        self._encoders_pub = rospy.Publisher('encoder_ticks', Encoders,
+        self._encoders_pub = rospy.Publisher(
+                '/arduino_connector/encoder_ticks',
+                Encoders,
                 queue_size=10)
 
     '''
@@ -82,11 +86,6 @@ class ArduinoConnector():
         <GPS latitude> <GPS longitude> <left encoder ticks> <right encoder ticks>
         '''
 
-        '''
-        The Arduino is sending the sensor data in a very tight loop; PySerial
-        can miss characters as the Arduino is sending data (see:
-        https://stackoverflow.com/questions/61166544/readline-in-pyserial-sometimes-captures-incomplete-values-being-streamed-from).
-        '''
         # Ensure there's data to read
         num_bytes_waiting = self._ser.in_waiting
 
