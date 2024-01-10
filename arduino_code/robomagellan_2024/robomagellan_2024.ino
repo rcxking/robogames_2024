@@ -25,7 +25,12 @@
 #define ENABLE_ENCODERS (1)
 
 // Cached GPS values
-double latitude, longitude;
+double latitude = 0.0;
+double longitude = 0.0;
+
+// Last known latitude/longitude
+double last_latitude = 0.0;
+double last_longitude = 0.0;
 
 // Have cached GPS values been updated?
 bool gps_values_found = false;
@@ -63,72 +68,9 @@ Encoder rightEncoder(RIGHT_ENCODER_CHAN_A, RIGHT_ENCODER_CHAN_B);
 int32_t left_encoder_ticks = 0;
 int32_t right_encoder_ticks = 0;
 
-/**
- * @brief Checks for a GPS coordinate and publishes it through the Serial
- * interface.  If a coordinate cannot be found "INVALID" is returned.
- */
-void ProcessGPSCommand() {
-#if ENABLE_GPS
-  if (gps_values_found) {
-    Serial.println("RES " + String(latitude, 6) + " " + String(longitude, 6));
-  } else {
-    Serial.println("RES INVALID");
-  }
-#else
-  Serial.println("RES INVALID");
-#endif
-}
-
-/**
- * @brief Publishes the current encoder ticks as a string.  Format is:
- * "RES <left encoder ticks> <right encoder ticks>"
- */
-void ProcessENCCommand() {
-#if ENABLE_ENCODERS
-  Serial.println("RES " + String(left_encoder_ticks) + " " + String(right_encoder_ticks));
-#else
-  Serial.println("RES INVALID");
-#endif
-}
-
-/**
- * @brief Processes the next command.
- */
-void ProcessCommand(const String& full_command) {
-  Serial.print("Processing next command: ");
-  Serial.println(full_command);
-
-  // First word is the command, so find the first space
-  const int first_space_idx = full_command.indexOf(' ');
-  Serial.print("first_space_idx: ");
-  Serial.println(first_space_idx);
-
-  // If a space isn't found, use the full_command
-  String command;
-  if (first_space_idx != -1) {
-    command = full_command.substring(0, first_space_idx);
-  } else {
-    command = full_command;
-  }
-  Serial.print("command: ");
-  Serial.println(command);
-
-  /*
-   * List of supported commands:
-   * 1) GPS - Returns a string of the current latitude/longitude
-   * 2) ENC - Returns a string of the current encoder ticks
-   *
-   * All commands' output should start with "RES " for easy processing on the
-   * ROS side.
-   */
-  if (command == "GPS") {
-    ProcessGPSCommand();
-  } else if (command == "ENC") {
-    ProcessENCCommand();
-  } else {
-    Serial.println("Unsupported");
-  }
-}
+// Last known encoder ticks
+int32_t last_left_encoder_ticks = -1;
+int32_t last_right_encoder_ticks = -1;
 
 void setup() {
   // Wait for a connection to the Raspberry Pi
@@ -138,13 +80,10 @@ void setup() {
   delay(150);
 
   while (!Serial);
-  Serial.println("Connection established to Raspberry Pi");
-
   // Establish GPS connection (if enabled); on failure stay in setup()
   Wire.begin();
 #if ENABLE_GPS
   if (myGNSS.begin() == false) {
-    Serial.println(F("ERROR: u-blox GNSS module not detected at default I2C address"));
     while (1);
   }
 
@@ -165,14 +104,6 @@ void setup() {
 }
 
 void loop() {
-  // Wait for the next requested command
-  if (Serial.available() > 0) {
-    // Process the next command after removing any whitespace and newline
-    String next_command = Serial.readString();
-    next_command.trim();
-    ProcessCommand(next_command);
-  }
-
 #if ENABLE_GPS
   // Update cached GPS values periodically to avoid spamming I2C bus
   if (millis() - last_gps_time > 1000) {
@@ -193,6 +124,42 @@ void loop() {
   right_encoder_ticks = rightEncoder.read();
 #endif
 
+  /*
+   * Publish the sensor data.  To reduce latency this is a single string of the
+   * form:
+   * S <GPS latitude> <GPS longitude> <left encoder ticks> <right encoder ticks>\r\n
+   *
+   * To help verify the data sent is accurate, look for the "S" character at the
+   * beginning and the \r\n at the end.
+   *
+   * Also only publish data if any of the sensor readings have changed to avoid
+   * spamming.
+   */
+  if (!DoubleEquals(latitude, last_latitude) ||
+      !DoubleEquals(longitude, last_longitude) ||
+      (last_left_encoder_ticks != left_encoder_ticks) ||
+      (last_right_encoder_ticks != right_encoder_ticks)) {
+    Serial.println(String("S") + " " + String(latitude) + " " +
+                   String(longitude) + " " + String(left_encoder_ticks) + " " +
+                   String(right_encoder_ticks));
+  }
+
+  // Update the last readings:
+#if ENABLE_GPS
+  last_latitude = latitude;
+  last_longitude = longitude;
+#endif
+
+#if ENABLE_ENCODERS
+  last_left_encoder_ticks = left_encoder_ticks;
+  last_right_encoder_ticks = right_encoder_ticks;
+#endif
+
   // Need a small delay to prevent Arduino thrashing
-  delay(100);
+  delay(10);
+}
+
+// Helper function to determine if two doubles equal each other
+bool DoubleEquals(const double num1, const double num2) {
+  return fabs(num1 - num2) <= 0.00001;
 }
