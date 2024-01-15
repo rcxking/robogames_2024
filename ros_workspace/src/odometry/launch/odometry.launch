@@ -1,0 +1,10 @@
+<!-- odometry.launch - Starts the odometry node for a real robot -->
+<launch>
+  <!-- Topic containing encoder ticks information -->
+  <arg name="encoder_topic" default="/arduino_connector/encoder_ticks"/>
+
+  <node pkg="odometry" type="odometry" name="odometry" required="true"
+    output="screen">
+    <param name="encoder_topic" value="$(arg encoder_topic)"/>
+  </node>
+</launch>

@@ -1,0 +1,16 @@
+<!-- robomagellan.launch - Actual launch file for RoboMagellan -->
+<launch>
+  <!-- Flags to enable/disable sensors -->
+  <arg name="enable_gps" default="true"/>
+  <arg name="enable_encoders" default="true"/>
+
+  <!-- Arduino Connector -->
+  <include file="$(find arduino_connector)/launch/arduino_connector.launch">
+    <arg name="enable_gps" value="$(arg enable_gps)"/>
+    <arg name="enable_encoders" value="$(arg enable_encoders)"/>
+  </include>
+
+  <!-- Odometry -->
+  <include file="$(find odometry)/launch/odometry.launch">
+  </include>
+</launch>

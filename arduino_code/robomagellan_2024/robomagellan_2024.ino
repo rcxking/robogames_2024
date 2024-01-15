@@ -119,9 +119,12 @@ void loop() {
 #endif
 
 #if ENABLE_ENCODERS
-  // Update encoder readings
-  left_encoder_ticks = leftEncoder.read();
-  right_encoder_ticks = rightEncoder.read();
+  /*
+   * Update encoder readings.  The library provides 4X counting, which means that
+   * each real tick is 4 ticks.
+   */
+  left_encoder_ticks = leftEncoder.read() / 4;
+  right_encoder_ticks = rightEncoder.read() / 4;
 #endif
 
   /*
