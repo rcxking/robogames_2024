@@ -32,12 +32,8 @@ void setup() {
 }
 
 void loop() {
-  /*
-   * The Talon SRX takes a value from 1000 - 2000.  1500 indicates a stop.
-   * For the left Talon, 2000 is full reverse and 1000 is full forward.
-   * For the right Talon, 2000 is full forward and 1000 is full reverse.
-   */
-  const int left_pwm_val = 1500 - left_percent * 5;
+  // The Talon SRX takes a value from 1000 - 2000.  1500 indicates a stop.
+  const int left_pwm_val = left_percent * 5 + 1500;
   const int right_pwm_val = right_percent * 5 + 1500;
 
   talon_left.writeMicroseconds(left_pwm_val);
