@@ -1,0 +1,7 @@
+<!-- rpi_motors.launch - Starts the Raspberry Pi Talon SRX node -->
+<launch>
+  <node pkg="rpi_motors" type="rpi_motors_node.py" name="rpi_motors"
+    required="true">
+
+  </node>
+</launch>
