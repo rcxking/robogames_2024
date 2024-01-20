@@ -1,0 +1,8 @@
+# Left Motor Power Percentage (-100% - 100%)
+int32 left_power_percentage
+
+# Right Motor Power Percentage (-100% - 100%)
+int32 right_power_percentage
+---
+# True if successful in sending motor percentage down; false if not.
+bool result
