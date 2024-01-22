@@ -56,15 +56,14 @@ void Odometry::HandleEncodersMessage(
 	cur_odom_.pose.pose.orientation.z = prev_odom_.pose.pose.orientation.z + delta_theta_t;
 
 	// Update current robot's velocities
-	cur_odom_.header.stamp = ros::Time::now();
-	const double delta_time = (cur_odom_.header.stamp.toSec() - prev_odom_.header.stamp.toSec());
+	const double delta_time = (msg->stamp.toSec() - prev_odom_.header.stamp.toSec());
 	cur_odom_.twist.twist.linear.x = dist_t / delta_time;
 	cur_odom_.twist.twist.angular.z = delta_theta_t / delta_time;
 
 	// Update odometry data over tf
 	const geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(
 																								cur_odom_.pose.pose.orientation.z);
-	odom_trans_.header.stamp = cur_odom_.header.stamp;
+	odom_trans_.header.stamp = msg->stamp;
 	odom_trans_.transform.translation.x = cur_odom_.pose.pose.position.x;
 	odom_trans_.transform.translation.y = cur_odom_.pose.pose.position.y;
 	odom_trans_.transform.translation.z = 0.0;
@@ -75,7 +74,7 @@ void Odometry::HandleEncodersMessage(
 	last_right_encoder_ticks_ = cur_right_ticks;
 
 	// Update the previous odometry information
-	prev_odom_.header.stamp = cur_odom_.header.stamp;
+	prev_odom_.header.stamp = msg->stamp;
 	prev_odom_.pose.pose.position.x = cur_odom_.pose.pose.position.x;
 	prev_odom_.pose.pose.position.y = cur_odom_.pose.pose.position.y;
 	prev_odom_.pose.pose.orientation.z = cur_odom_.pose.pose.orientation.z;
