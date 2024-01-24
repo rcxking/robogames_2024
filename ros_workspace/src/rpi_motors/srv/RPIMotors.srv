@@ -1,8 +1,8 @@
-# Left Motor Power Percentage (-100% - 100%)
-int32 left_power_percentage
+# Desired Left Motor Velocity (m/s) 
+float32 left_desired_velocity
 
-# Right Motor Power Percentage (-100% - 100%)
-int32 right_power_percentage
+# Desired Right Motor Velocity (m/s)
+float32 right_desired_velocity
 ---
-# True if successful in sending motor percentage down; false if not.
+# True if successful in sending motor velocities down; false if not.
 bool result
