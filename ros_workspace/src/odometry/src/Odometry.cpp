@@ -11,6 +11,7 @@
 #include <geometry_msgs/TransformStamped.h>
 #include <odometry/Odometry.h>
 #include <ros/ros.h>
+#include <std_msgs/Float32.h>
 #include <tf/transform_broadcaster.h>
 
 #include <cmath>
@@ -59,6 +60,17 @@ void Odometry::HandleEncodersMessage(
 	const double delta_time = (msg->stamp.toSec() - prev_odom_.header.stamp.toSec());
 	cur_odom_.twist.twist.linear.x = dist_t / delta_time;
 	cur_odom_.twist.twist.angular.z = delta_theta_t / delta_time;
+
+	// Publish each side's linear velocity
+	const double left_vel = left_dist_t / delta_time;
+	const double right_vel = right_dist_t / delta_time;
+
+	std_msgs::Float32 left_vel_msg, right_vel_msg;
+	left_vel_msg.data = left_vel;
+	right_vel_msg.data = right_vel;
+
+	left_vel_pub_.publish(left_vel_msg);
+	right_vel_pub_.publish(right_vel_msg);
 
 	// Update odometry data over tf
 	const geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(
