@@ -6,6 +6,7 @@ project(rpi_motors)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   message_generation
+  odometry
   rospy
   std_msgs
 )
@@ -63,7 +64,8 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rpi_motors
-#  CATKIN_DEPENDS rospy std_msgs
+  CATKIN_DEPENDS
+    odometry
 #  DEPENDS system_lib
 )
 
