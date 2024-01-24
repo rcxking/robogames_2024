@@ -7,6 +7,7 @@
 # Bryant Pong
 # 1/18/24
 
+from odometry.msg import Velocities
 from rpi_motors.srv import RPIMotors
 import rospy
 
@@ -14,13 +15,18 @@ import rospy
 def HandleMotorCommand(req):
     rospy.loginfo('Received left motor: ' + str(req.left_desired_velocity) +
             'm/s; right motor:' + str(req.right_desired_velocity) + 'm/s')
-
     return True
 
 def main():
     rospy.loginfo('Starting Raspberry Pi Motors Node')
     rospy.init_node('rpi_motors_node')
-    s = rospy.Service('rpi_motor_commands', RPIMotors, HandleMotorCommand)
+    
+    # Start Subscriber to the current motor velocities
+    
+    # Start service to send motor commands
+    # TODO: Ensure pigpio daemon is started before sending commands
+    motor_service = rospy.Service('rpi_motor_commands', RPIMotors, HandleMotorCommand)
+    
     rospy.loginfo('Ready to process and send motor commands')
     rospy.spin()
 

@@ -13,6 +13,7 @@
 #include <arduino_connector/Encoders.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <odometry/Velocities.h>
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
 #include <tf/transform_broadcaster.h>
@@ -55,9 +56,8 @@ public:
 		// Initialize odometry publisher
 		odom_pub_ = nh.advertise<nav_msgs::Odometry>("odom", 100);
 
-		// Initialize left/right velocity publishers
-		left_vel_pub_ = nh.advertise<std_msgs::Float32>("left_vel", 100);
-		right_vel_pub_ = nh.advertise<std_msgs::Float32>("right_vel", 100);
+		// Initialize left/right velocity publisher
+		cur_vel_pub_ = nh.advertise<odometry::Velocities>("current_velocities", 100);
 	}
 
 	/**
@@ -122,8 +122,8 @@ private:
 	//! Odometry topic publisher
 	ros::Publisher odom_pub_;
 
-	//! Topics to publish the left/right velocities (m/s)
-	ros::Publisher left_vel_pub_, right_vel_pub_;
+	//! Topic to publish the left/right velocities (m/s)
+	ros::Publisher cur_vel_pub_;
 
 	//! Broadcaster to publish odometry via tf
 	tf::TransformBroadcaster tf_broadcaster_;

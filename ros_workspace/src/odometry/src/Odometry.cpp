@@ -10,6 +10,7 @@
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <odometry/Odometry.h>
+#include <odometry/Velocities.h>
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
 #include <tf/transform_broadcaster.h>
@@ -65,12 +66,11 @@ void Odometry::HandleEncodersMessage(
 	const double left_vel = left_dist_t / delta_time;
 	const double right_vel = right_dist_t / delta_time;
 
-	std_msgs::Float32 left_vel_msg, right_vel_msg;
-	left_vel_msg.data = left_vel;
-	right_vel_msg.data = right_vel;
-
-	left_vel_pub_.publish(left_vel_msg);
-	right_vel_pub_.publish(right_vel_msg);
+	odometry::Velocities vel_msg;
+	vel_msg.stamp = ros::Time::now();
+	vel_msg.left_velocity = left_vel;
+	vel_msg.right_velocity = right_vel;
+	cur_vel_pub_.publish(vel_msg);
 
 	// Update odometry data over tf
 	const geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(
