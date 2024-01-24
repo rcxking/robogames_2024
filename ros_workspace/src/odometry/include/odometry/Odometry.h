@@ -46,7 +46,7 @@ public:
 		odom_trans_.header.frame_id = "odom";
 		odom_trans_.child_frame_id = "base_link";
 
-		ros::NodeHandle nh;
+		ros::NodeHandle nh("~");
 		// Initialize encoder topic subscriber
 		// TODO: Make the topic a parameter
 		encoder_sub_ = nh.subscribe(encoder_topic_, 100,
