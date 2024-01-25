@@ -1,7 +1,12 @@
 <!-- rpi_motors.launch - Starts the Raspberry Pi Talon SRX node -->
 <launch>
+  <!-- Proportional constants -->
+  <arg name="kp_left" default="90"/>
+  <arg name="kp_right" default="90"/>
+
   <node pkg="rpi_motors" type="rpi_motors_node.py" name="rpi_motors"
     required="true" output="screen">
-
+    <param name="kp_left" value="$(arg kp_left)"/>
+    <param name="kp_right" value="$(arg kp_right)"/>
   </node>
 </launch>

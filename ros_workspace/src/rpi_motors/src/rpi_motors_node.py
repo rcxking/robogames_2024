@@ -9,7 +9,7 @@
 
 from odometry.msg import Velocities
 from rpi_motors.srv import RPIMotors
-import pigpio
+#import pigpio
 import rospy
 
 # Proportional constants for the left and right sides
@@ -30,7 +30,7 @@ cur_left_pwm = 1500
 cur_right_pwm = 1500
 
 # GPIO interface.  GPIO 18 is for the left motor; GPIO 13 is for the right.
-pi = pigpio.pi()
+#pi = pigpio.pi()
 LEFT_GPIO_PIN = 18
 RIGHT_GPIO_PIN = 13
 
@@ -60,7 +60,7 @@ def ComputeMotorCommand():
     
     # Apply proportional constants to determine the change in velocity (m/s)
     delta_left_vel_ms = kp_left * left_error
-    delta_right_vel = kp_right * right_error
+    delta_right_vel_ms = kp_right * right_error
     
     # Convert velocities from m/s to motor commands
     delta_left_vel_pwm = 90.909 * delta_left_vel_ms + 1500
@@ -86,19 +86,25 @@ def main():
     rospy.init_node('rpi_motors_node')
     
     # Ensure pigpio daemon is started before sending commands
+    '''
     if not pi.connected:
         rospy.loginfo('ERROR: pigpio daemon not started')
         return
+    '''
     
     # Send the stop motors command (1500)
-    pi.set_servo_pulsewidth(LEFT_GPIO_PIN, 1500)
-    pi.set_servo_pulsewidth(RIGHT_GPIO_PIN, 1500)
+    #pi.set_servo_pulsewidth(LEFT_GPIO_PIN, 1500)
+    #pi.set_servo_pulsewidth(RIGHT_GPIO_PIN, 1500)
+    
+    # Read in the proportional constants
+    kp_left = rospy.get_param('~kp_left')
+    kp_right = rospy.get_param('~kp_right')
+    rospy.loginfo('kp_left: ' + str(kp_left) + '; kp_right: ' + str(kp_right))
     
     # Start Subscriber to the current motor velocities
     rospy.Subscriber('/odometry/current_velocities', Velocities, HandleVelocityMsg)
     
     # Start service to send motor commands
-    # TODO: Ensure pigpio daemon is started before sending commands
     motor_service = rospy.Service('rpi_motor_commands', RPIMotors, HandleMotorCommand)
     
     rospy.loginfo('Ready to process and send motor commands')
