@@ -1,5 +1,10 @@
 <!-- robomagellan.launch - Actual launch file for RoboMagellan -->
 <launch>
+  <!-- High-level flags to enable/disable individual components -->
+  <arg name="enable_ac" default="true"/>
+  <arg name="enable_odometry" default="true"/>
+  <arg name="enable_diff_drive" default="true"/>
+
   <!-- Flags to enable/disable sensors -->
   <arg name="enable_gps" default="true"/>
   <arg name="enable_encoders" default="true"/>
@@ -9,18 +14,24 @@
   <arg name="kp_right" default="90"/>
 
   <!-- Arduino Connector -->
-  <include file="$(find arduino_connector)/launch/arduino_connector.launch">
-    <arg name="enable_gps" value="$(arg enable_gps)"/>
-    <arg name="enable_encoders" value="$(arg enable_encoders)"/>
-  </include>
+  <group if="$(arg enable_ac)">
+    <include file="$(find arduino_connector)/launch/arduino_connector.launch">
+      <arg name="enable_gps" value="$(arg enable_gps)"/>
+      <arg name="enable_encoders" value="$(arg enable_encoders)"/>
+    </include>
+  </group>
 
   <!-- Odometry -->
-  <include file="$(find odometry)/launch/odometry.launch">
-  </include>
+  <group if="$(arg enable_odometry)">
+    <include file="$(find odometry)/launch/odometry.launch">
+    </include>
+  </group>
 
   <!-- Differential Drive Controller -->
-  <include file="$(find rpi_motors)/launch/rpi_motors.launch">
-    <arg name="kp_left" value="$(arg kp_left)"/>
-    <arg name="kp_right" value="$(arg kp_right)"/>
-  </include>
+  <group if="$(arg enable_diff_drive)">
+    <include file="$(find rpi_motors)/launch/rpi_motors.launch">
+      <arg name="kp_left" value="$(arg kp_left)"/>
+      <arg name="kp_right" value="$(arg kp_right)"/>
+    </include>
+  </group>
 </launch>
