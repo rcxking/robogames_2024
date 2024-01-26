@@ -128,11 +128,6 @@ def main():
     rospy.loginfo('Starting Raspberry Pi Motors Node')
     rospy.init_node('rpi_motors_node')
 
-    # Ensure pigpio daemon is started before sending commands
-    if not pi.connected:
-        rospy.loginfo('ERROR: pigpio daemon not started')
-        return
-
     # Construct motor controller object
     controller = RPIMotorsControl()
     controller.spin()
