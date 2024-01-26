@@ -4,6 +4,10 @@
   <arg name="enable_gps" default="true"/>
   <arg name="enable_encoders" default="true"/>
 
+  <!-- Motor Controller proportional constants -->
+  <arg name="kp_left" default="90"/>
+  <arg name="kp_right" default="90"/>
+
   <!-- Arduino Connector -->
   <include file="$(find arduino_connector)/launch/arduino_connector.launch">
     <arg name="enable_gps" value="$(arg enable_gps)"/>
@@ -12,5 +16,11 @@
 
   <!-- Odometry -->
   <include file="$(find odometry)/launch/odometry.launch">
+  </include>
+
+  <!-- Differential Drive Controller -->
+  <include file="$(find rpi_motors)/launch/rpi_motors.launch">
+    <arg name="kp_left" value="$(arg kp_left)"/>
+    <arg name="kp_right" value="$(arg kp_right)"/>
   </include>
 </launch>
