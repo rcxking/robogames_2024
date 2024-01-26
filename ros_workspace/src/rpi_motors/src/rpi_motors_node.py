@@ -106,6 +106,20 @@ class RPIMotorsControl:
         # Send motor commands
         #self._pi.set_servo_pulsewidth(self._LEFT_GPIO_PIN, self._cur_left_pwm)
         #self._pi.set_servo_pulsewidth(self._RIGHT_GPIO_PIN, self._cur_right_pwm)
+        
+    # Main loop
+    def spin(self):
+        # TODO: Make this a rosparam
+        rate = rospy.Rate(30)
+        while not rospy.is_shutdown():
+            self.ComputeMotorCommand()
+            rate.sleep()
+            
+        # On shutdown, stop the motors and perform cleanup
+        rospy.loginfo('Stopping RPI motors node')
+        #self._pi.set_servo_pulsewidth(self._LEFT_GPIO_PIN, 1500)
+        #self._pi.set_servo_pulsewidth(self._RIGHT_GPIO_PIN, 1500)
+        #self._pi.stop()
 
 def main():
     rospy.loginfo('Starting Raspberry Pi Motors Node')
@@ -120,18 +134,7 @@ def main():
     
     # Construct motor controller object
     controller = RPIMotorsControl()
-    
-    # TODO: Make this a rosparam
-    rate = rospy.Rate(30)
-    while not rospy.is_shutdown():
-        controller.ComputeMotorCommand()
-        rate.sleep()
-        
-    # On shutdown, stop the motors and perform cleanup
-    rospy.loginfo('Stopping RPI motors node')
-    pi.set_servo_pulsewidth(LEFT_GPIO_PIN, 1500)
-    pi.set_servo_pulsewidth(RIGHT_GPIO_PIN, 1500)
-    pi.stop()
+    controller.spin()
 
 if __name__ == '__main__':
     main()
