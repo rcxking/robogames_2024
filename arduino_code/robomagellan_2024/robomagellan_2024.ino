@@ -21,7 +21,7 @@
  * When debugging the Arduino code it can be helpful to enable/disable certain
  * sensors.  For a competition run all these should be 1.
  */
-#define ENABLE_GPS (1)
+#define ENABLE_GPS (0)
 #define ENABLE_ENCODERS (1)
 
 // Cached GPS values
@@ -159,7 +159,7 @@ void loop() {
 #endif
 
   // Need a small delay to prevent Arduino thrashing
-  delay(10);
+  delay(100);
 }
 
 // Helper function to determine if two doubles equal each other
