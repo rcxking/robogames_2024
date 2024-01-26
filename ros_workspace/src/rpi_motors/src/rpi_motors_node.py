@@ -12,27 +12,33 @@ from rpi_motors.srv import RPIMotors
 #import pigpio
 import rospy
 
-# Proportional constants for the left and right sides
-kp_left = 1.0
-kp_right = 1.0
+# Class to perform the proportional motor controls
+class RPIMotorsControl(self):
+    # Default Constructor.
+    def __init__(self):
+        # Proportional constants
+        self._kp_left = 1.0
+        self._kp_right = 1.0
+        
+        # Current linear velocities (m/s)
+        self._cur_left_vel = 0.0
+        self._cur_right_vel = 0.0
+        
+        # Desired linear velocities (m/s)
+        self._des_left_vel = 0.0
+        self._des_right_vel = 0.0
+        
+        # Current motor PWM signals (1000 - 2000).  1500 is STOP; 2000 is full
+        # forward; 1000 is full reverse.
+        self._cur_left_pwm = 1500
+        self._cur_right_pwm = 1500
+        
+        # GPIO interface.  GPIO 18 is for the left motor; GPIO 13 is for the
+        # right motor.
+        self._pi = pigpio.pi()
+        self._LEFT_GPIO_PIN = 18
+        self._RIGHT_GPIO_PIN = 13
 
-# Current linear velocities (m/s)
-cur_left_vel = 0.0
-cur_right_vel = 0.0
-
-# Desired linear velocities (m/s)
-des_left_vel = 0.0
-des_right_vel = 0.0
-
-# Current motor PWM signals (1000 - 2000); 1500 is STOP; 2000 is full forward;
-# 1000 is full reverse.
-cur_left_pwm = 1500
-cur_right_pwm = 1500
-
-# GPIO interface.  GPIO 18 is for the left motor; GPIO 13 is for the right.
-#pi = pigpio.pi()
-LEFT_GPIO_PIN = 18
-RIGHT_GPIO_PIN = 13
 
 # Callback to update current linear velocities
 def HandleVelocityMsg(msg):
