@@ -95,8 +95,8 @@ class RPIMotorsControl:
         rospy.loginfo('delta_left_vel_pwm: ' + str(delta_left_vel_pwm) + '; delta_right_vel_pwm: ' + str(delta_right_vel_pwm))
 
         # Apply current velocity commands
-        self._cur_left_pwm += delta_left_vel_pwm
-        self._cur_right_pwm += delta_right_vel_pwm
+        self._cur_left_pwm = delta_left_vel_pwm
+        self._cur_right_pwm = delta_right_vel_pwm
         rospy.loginfo('cur_left_pwm: ' + str(self._cur_left_pwm) + '; cur_right_pwm: ' + str(self._cur_right_pwm))
 
         # Threshold the current left/right pwm command to be in range [1000, 2000]
