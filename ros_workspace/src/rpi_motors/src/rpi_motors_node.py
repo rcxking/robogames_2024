@@ -13,12 +13,13 @@ from rpi_motors.srv import RPIMotors
 import rospy
 
 # Class to perform the proportional motor controls
-class RPIMotorsControl(self):
+class RPIMotorsControl:
     # Default Constructor.
     def __init__(self):
         # Proportional constants
-        self._kp_left = 1.0
-        self._kp_right = 1.0
+        self._kp_left = rospy.get_param('~kp_left')
+        self._kp_right = rospy.get_param('~kp_right')
+        rospy.loginfo('kp_left: ' + str(self._kp_left) + '; kp_right: ' + str(self._kp_right))
         
         # Current linear velocities (m/s)
         self._cur_left_vel = 0.0
@@ -35,9 +36,21 @@ class RPIMotorsControl(self):
         
         # GPIO interface.  GPIO 18 is for the left motor; GPIO 13 is for the
         # right motor.
-        self._pi = pigpio.pi()
+        #self._pi = pigpio.pi()
         self._LEFT_GPIO_PIN = 18
         self._RIGHT_GPIO_PIN = 13
+        
+        # Send the stop motors command (1500)
+        #self._pi.set_servo_pulsewidth(self._LEFT_GPIO_PIN, 1500)
+        #self._pi.set_servo_pulsewidth(self._RIGHT_GPIO_PIN, 1500)
+        
+        # Start Subscriber to the current motor velocities
+        rospy.Subscriber('/odometry/current_velocities', Velocities, self.HandleVelocityMsg)
+    
+        # Start service to send motor commands
+        motor_service = rospy.Service('rpi_motor_commands', RPIMotors, self.HandleMotorCommand)
+    
+        rospy.loginfo('Ready to process and send motor commands')
 
     # Callback to update robot's current linear velocities
     def HandleVelocityMsg(self, msg):
@@ -48,12 +61,12 @@ class RPIMotorsControl(self):
     def HandleMotorCommand(self, req):
         rospy.loginfo('Received left motor: ' + str(req.left_desired_velocity) +
                       'm/s; right motor:' + str(req.right_desired_velocity) + 'm/s')
-        des_left_vel = req.left_desired_velocity
-        des_right_vel = req.right_desired_velocity
+        self._des_left_vel = req.left_desired_velocity
+        self._des_right_vel = req.right_desired_velocity
         return True
     
     # Callback to compute the next motor command
-    def ComputeMotorCommand():
+    def ComputeMotorCommand(self):
         # Compute the error between the desired and current velocities (des - cur).
         # If the difference is positive, the current velocity is less than the
         # desired velocity and the motor needs to speed up.  If the difference
@@ -62,6 +75,10 @@ class RPIMotorsControl(self):
         # need to be made.
         left_error = self._des_left_vel - self._cur_left_vel
         right_error = self._des_right_vel - self._cur_right_vel
+        rospy.loginfo('des_left_vel: ' + str(self._des_left_vel) + '; cur_left_vel: ' + 
+                      str(self._cur_left_vel) + '; des_right_vel: ' + str(self._des_right_vel) +
+                      '; cur_right_vel: ' + str(self._cur_right_vel) + '; left_error: ' + 
+                      str(left_error) + '; right_error: ' + str(right_error))
         
         # Apply proportional constants to determine the change in velocity (m/s)
         delta_left_vel_ms = self._kp_left * left_error
@@ -97,27 +114,13 @@ def main():
         return
     '''
     
-    # Send the stop motors command (1500)
-    #pi.set_servo_pulsewidth(LEFT_GPIO_PIN, 1500)
-    #pi.set_servo_pulsewidth(RIGHT_GPIO_PIN, 1500)
-    
-    # Read in the proportional constants
-    kp_left = rospy.get_param('~kp_left')
-    kp_right = rospy.get_param('~kp_right')
-    rospy.loginfo('kp_left: ' + str(kp_left) + '; kp_right: ' + str(kp_right))
-    
-    # Start Subscriber to the current motor velocities
-    rospy.Subscriber('/odometry/current_velocities', Velocities, HandleVelocityMsg)
-    
-    # Start service to send motor commands
-    motor_service = rospy.Service('rpi_motor_commands', RPIMotors, HandleMotorCommand)
-    
-    rospy.loginfo('Ready to process and send motor commands')
+    # Construct motor controller object
+    controller = RPIMotorsControl()
     
     # TODO: Make this a rosparam
     rate = rospy.Rate(30)
     while not rospy.is_shutdown():
-        ComputeMotorCommand()
+        controller.ComputeMotorCommand()
         rate.sleep()
         
     # On shutdown, stop the motors and perform cleanup
