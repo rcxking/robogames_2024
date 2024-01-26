@@ -83,14 +83,17 @@ class RPIMotorsControl:
         # Apply proportional constants to determine the change in velocity (m/s)
         delta_left_vel_ms = self._kp_left * left_error
         delta_right_vel_ms = self._kp_right * right_error
+        rospy.loginfo('delta_left_vel_ms: ' + str(delta_left_vel_ms) + '; delta_right_vel_ms: ' + str(delta_right_vel_ms))
         
         # Convert velocities from m/s to motor commands
         delta_left_vel_pwm = 90.909 * delta_left_vel_ms + 1500
         delta_right_vel_pwm = 90.909 * delta_right_vel_ms + 1500
+        rospy.loginfo('delta_left_vel_pwm: ' + str(delta_left_vel_pwm) + '; delta_right_vel_pwm: ' + str(delta_right_vel_pwm))
         
         # Apply current velocity commands
         self._cur_left_pwm += delta_left_vel_pwm
         self._cur_right_pwm += delta_right_vel_pwm
+        rospy.loginfo('cur_left_pwm: ' + str(self._cur_left_pwm) + '; cur_right_pwm: ' + str(self._cur_right_pwm))
         
         # Threshold the current left/right pwm command to be in range [1000, 2000]
         self._cur_left_pwm = max(1000, self._cur_left_pwm)
@@ -98,6 +101,7 @@ class RPIMotorsControl:
         
         self._cur_right_pwm = max(1000, self._cur_right_pwm)
         self._cur_right_pwm = min(2000, self._cur_right_pwm)
+        rospy.loginfo('Thresholded cur_left_pwm: ' + str(self._cur_left_pwm) + '; thresholded cur_right_pwm: ' + str(self._cur_right_pwm))
         
         # Send motor commands
         #self._pi.set_servo_pulsewidth(self._LEFT_GPIO_PIN, self._cur_left_pwm)
