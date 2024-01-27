@@ -159,7 +159,7 @@ void loop() {
 #endif
 
   // Need a small delay to prevent Arduino thrashing
-  delay(100);
+  delay(20);
 }
 
 // Helper function to determine if two doubles equal each other
