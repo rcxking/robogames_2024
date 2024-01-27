@@ -2,7 +2,7 @@
 time stamp
 
 # Current left velocity (m/s)
-float32 left_velocity
+float64 left_velocity
 
 # Current right velocity (m/s)
-float32 right_velocity
+float64 right_velocity
