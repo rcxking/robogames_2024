@@ -41,6 +41,23 @@ SCENARIO("An Odometry object is constructed", "[Odometry]") {
 			REQUIRE(DoubleCompare(current_pose.pose.pose.orientation.y, 0.0) == true);
 			REQUIRE(DoubleCompare(current_pose.pose.pose.orientation.z, 0.0) == true);
 			REQUIRE(DoubleCompare(current_pose.pose.pose.orientation.w, 0.0) == true);
+
+			// Verify lin/angular averaging buffers have a default size of 20
+			REQUIRE(odom.GetVelBufferSize() == 20);
+			REQUIRE(odom.GetLinVelBuffer() != nullptr);
+			REQUIRE(odom.GetAngVelBuffer() != nullptr);
+
+			// Ensure the buffers are all 0's
+			const double *lin_buf = odom.GetLinVelBuffer();
+			const double *ang_buf = odom.GetAngVelBuffer();
+			for (size_t i = 0; i < odom.GetVelBufferSize(); ++i) {
+				REQUIRE(DoubleCompare(lin_buf[i], 0.0) == true);
+				REQUIRE(DoubleCompare(ang_buf[i], 0.0) == true);
+			}
+
+			// Ensure helper variables to compute velocity averages are initialized
+			REQUIRE(DoubleCompare(odom.GetCurLinVelAvg(), 0.0) == true);
+			REQUIRE(DoubleCompare(odom.GetCurAngVelAvg(), 0.0) == true);
 		}
 	}
 }
@@ -80,6 +97,46 @@ SCENARIO("An Odometry object is to be used", "[Odometry]") {
 				REQUIRE(res2 == -9);
 				REQUIRE(res3 == 1);
 				REQUIRE(res4 == -1);
+			}
+		}
+
+		WHEN("A new linear/angular velocity is to be added") {
+			THEN("The velocity averages are correct") {
+				double new_lin_vel = 0.1;
+				double new_ang_vel = 0.2;
+
+				double lin_vel_sum = 0.0;
+				double ang_vel_sum = 0.0;
+
+				for (int i = 0; i < 21; ++i) {
+					odom.UpdateVelocityAverages(new_lin_vel, new_ang_vel);
+
+					/*
+					 * The default buffer sizes is 20, so adding 21 entries will
+					 * test out the rollover/modulo math for the running buffer.
+					 * At each iteration we expect the linear/angular velocity values
+					 * to be updated appropriately.
+					 */
+					lin_vel_sum += new_lin_vel;
+					ang_vel_sum += new_ang_vel;
+
+					// For the 21th iteration, need to subtract the original 0.1/0.2
+					if (i == 20) {
+						lin_vel_sum -= 0.1;
+						ang_vel_sum -= 0.2;
+					}
+
+					const double expected_lin_vel_avg = lin_vel_sum / 20;
+					const double expected_ang_vel_avg = ang_vel_sum / 20;
+
+					REQUIRE(DoubleCompare(expected_lin_vel_avg,
+							odom.GetCurLinVelAvg()) == true);
+					REQUIRE(DoubleCompare(expected_ang_vel_avg,
+							odom.GetCurAngVelAvg()) == true);
+
+					new_lin_vel += 0.1;
+					new_ang_vel += 0.1;
+				}
 			}
 		}
 	}
