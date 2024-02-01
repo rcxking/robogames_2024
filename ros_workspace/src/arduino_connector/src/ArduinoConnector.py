@@ -140,7 +140,7 @@ class ArduinoConnector():
     '''
     def MainLoop(self):
         # Polling rate (Hz) TODO: Make this a parameter
-        rate = rospy.Rate(100)
+        rate = rospy.Rate(200)
 
         rospy.loginfo('Starting Arduino Connector MainLoop()')
 

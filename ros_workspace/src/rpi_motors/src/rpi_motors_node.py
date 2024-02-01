@@ -114,7 +114,7 @@ class RPIMotorsControl:
     # Main loop
     def spin(self):
         # TODO: Make this a rosparam
-        rate = rospy.Rate(30)
+        rate = rospy.Rate(200)
         while not rospy.is_shutdown():
             self.ComputeMotorCommand()
             rate.sleep()

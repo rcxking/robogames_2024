@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
   // Object that handles computing and publishing odometry information
   Odometry odom(encoder_topic);
 
-  ros::Rate r(30);
+  ros::Rate r(200);
   while (n.ok()) {
     odom.PublishData();
     ros::spinOnce();
