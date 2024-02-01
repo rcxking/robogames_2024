@@ -61,10 +61,20 @@ void Odometry::HandleEncodersMessage(
 	cur_odom_.pose.pose.position.y = prev_odom_.pose.pose.position.y + (dist_t * sin(trig_inside));
 	cur_odom_.pose.pose.orientation.z = prev_odom_.pose.pose.orientation.z + delta_theta_t;
 
-	// Update current robot's velocities
+	/*
+	 * Update current robot's velocities.  Because of aliasing from the robot's
+	 * encoders (the signal jitters), average out the readings instead of
+	 * publishing the robot's instantaneous velocities.
+	 */
 	const double delta_time = (msg->stamp.toSec() - prev_odom_.header.stamp.toSec());
-	cur_odom_.twist.twist.linear.x = dist_t / delta_time;
-	cur_odom_.twist.twist.angular.z = delta_theta_t / delta_time;
+	const double new_linear_vel = dist_t / delta_time;
+	const double new_angular_vel = delta_theta_t / delta_time;
+
+	UpdateVelocityAverages(new_linear_vel, new_angular_vel);
+
+  cur_odom_.header.stamp = msg->stamp;
+	cur_odom_.twist.twist.linear.x = cur_lin_vel_avg_;
+	cur_odom_.twist.twist.angular.z = cur_ang_vel_avg_;
 
 	// Publish each side's linear velocity
 	const double left_vel = left_dist_t / delta_time;
@@ -96,6 +106,31 @@ void Odometry::HandleEncodersMessage(
 	prev_odom_.pose.pose.position.x = cur_odom_.pose.pose.position.x;
 	prev_odom_.pose.pose.position.y = cur_odom_.pose.pose.position.y;
 	prev_odom_.pose.pose.orientation.z = cur_odom_.pose.pose.orientation.z;
+}
+
+void Odometry::UpdateVelocityAverages(const double lin_vel,
+		                                  const double ang_vel) {
+	// Current position to update buffer values
+	static size_t cur_pos = 0;
+
+	const double lin_vel_to_drop = lin_vel_buffer_[cur_pos];
+	const double new_lin_avg = ((vel_buffer_size_ * cur_lin_vel_avg_) -
+			lin_vel_to_drop + lin_vel) / vel_buffer_size_;
+
+	const double ang_vel_to_drop = ang_vel_buffer_[cur_pos];
+	const double new_ang_avg = ((vel_buffer_size_ * cur_ang_vel_avg_) -
+			ang_vel_to_drop + ang_vel) / vel_buffer_size_;
+
+	// Update buffers with current velocities
+	lin_vel_buffer_[cur_pos] = lin_vel;
+	ang_vel_buffer_[cur_pos] = ang_vel;
+
+	// Update current velocity averages
+	cur_lin_vel_avg_ = new_lin_avg;
+	cur_ang_vel_avg_ = new_ang_avg;
+
+	// Update next position for next call
+	cur_pos = (cur_pos + 1) % vel_buffer_size_;
 }
 
 void Odometry::PublishData() {

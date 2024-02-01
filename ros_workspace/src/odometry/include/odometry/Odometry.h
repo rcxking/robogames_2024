@@ -18,14 +18,21 @@
 #include <std_msgs/Float32.h>
 #include <tf/transform_broadcaster.h>
 
+#include <cstring>
 #include <string>
 
 class Odometry {
 public:
-	//! Default Constructor
+	/**
+	 * Constructor
+	 *
+	 * @param encoder_topic String containing the topic that publishes Encoder
+	 * info.
+	 */
 	Odometry(const std::string& encoder_topic) :
 		encoder_topic_(encoder_topic),
-		last_left_encoder_ticks_(0), last_right_encoder_ticks_(0) {
+		last_left_encoder_ticks_(0), last_right_encoder_ticks_(0),
+		cur_lin_vel_avg_(0.0), cur_ang_vel_avg_(0.0) {
 		// Initialize the previous and current odometry messages
 		prev_odom_.header.stamp = ros::Time::now();
 		prev_odom_.header.frame_id = "odom";
@@ -43,6 +50,12 @@ public:
 		cur_odom_.twist.twist.linear.x = 0.0;
 		cur_odom_.twist.twist.angular.z = 0.0;
 
+		vel_buffer_size_ = 20;
+		lin_vel_buffer_ = new double[vel_buffer_size_];
+		ang_vel_buffer_ = new double[vel_buffer_size_];
+		memset(lin_vel_buffer_, 0, sizeof(double)*vel_buffer_size_);
+		memset(ang_vel_buffer_, 0, sizeof(double)*vel_buffer_size_);
+
 		// Initialize tf broadcast message
 		odom_trans_.header.frame_id = "odom";
 		odom_trans_.child_frame_id = "base_link";
@@ -58,6 +71,20 @@ public:
 
 		// Initialize left/right velocity publisher
 		cur_vel_pub_ = nh.advertise<odometry::Velocities>("current_velocities", 100);
+	}
+
+	//! Destructor
+	~Odometry() {
+		// Free up velocity averaging buffers
+		if (lin_vel_buffer_ != nullptr) {
+			delete [] lin_vel_buffer_;
+			lin_vel_buffer_ = nullptr;
+		}
+
+		if (ang_vel_buffer_ != nullptr) {
+			delete [] ang_vel_buffer_;
+			ang_vel_buffer_ = nullptr;
+		}
 	}
 
 	/**
@@ -81,12 +108,27 @@ public:
 	 */
 	void HandleEncodersMessage(const arduino_connector::Encoders::ConstPtr& msg);
 
+	/**
+	 * @brief Updates and computes the average linear/angular velocities to
+	 * filter out encoder aliasing.
+	 * @param lin_vel Latest linear velocity (m/s).
+	 * @param ang_vel Latest angular velocity (rad/s).
+	 */
+	void UpdateVelocityAverages(const double lin_vel, const double ang_vel);
+
 	//! Accessors
 	std::string GetEncoderTopic() const { return encoder_topic_; }
 	int32_t GetLastLeftEncoderTicks() const { return last_left_encoder_ticks_; }
 	int32_t GetLastRightEncoderTicks() const { return last_right_encoder_ticks_; }
 
 	nav_msgs::Odometry GetCurrentOdom() const { return cur_odom_; }
+
+	size_t GetVelBufferSize() const { return vel_buffer_size_; }
+	double *GetLinVelBuffer() { return lin_vel_buffer_; }
+	double *GetAngVelBuffer() { return ang_vel_buffer_; }
+
+	double GetCurLinVelAvg() const { return cur_lin_vel_avg_; }
+	double GetCurAngVelAvg() const { return cur_ang_vel_avg_; }
 
 private:
 	//! Subscribe to this topic for encoder info
@@ -113,6 +155,14 @@ private:
 	//! Current and previous robot odom messages
 	nav_msgs::Odometry prev_odom_, cur_odom_;
 
+	//! Buffers to help with velocity averaging
+	size_t vel_buffer_size_;
+	double *lin_vel_buffer_;
+	double *ang_vel_buffer_;
+
+	//! Current linear/angular velocities (m/s and rad/s)
+	double cur_lin_vel_avg_, cur_ang_vel_avg_;
+
 	//! Transform message
 	geometry_msgs::TransformStamped odom_trans_;
 
@@ -127,6 +177,11 @@ private:
 
 	//! Broadcaster to publish odometry via tf
 	tf::TransformBroadcaster tf_broadcaster_;
+
+	//! No Default Constructor/Copy Constructor/Assignment Operator=
+	Odometry() = delete;
+	Odometry(const Odometry& rhs) = delete;
+	Odometry& operator=(const Odometry& rhs) = delete;
 };
 
 #endif /* INCLUDE_ODOMETRY_ODOMETRY_H_ */
