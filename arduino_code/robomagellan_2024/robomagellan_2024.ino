@@ -28,10 +28,6 @@
 double latitude = 0.0;
 double longitude = 0.0;
 
-// Last known latitude/longitude
-double last_latitude = 0.0;
-double last_longitude = 0.0;
-
 // Have cached GPS values been updated?
 bool gps_values_found = false;
 
@@ -67,10 +63,6 @@ Encoder rightEncoder(RIGHT_ENCODER_CHAN_A, RIGHT_ENCODER_CHAN_B);
  */
 int32_t left_encoder_ticks = 0;
 int32_t right_encoder_ticks = 0;
-
-// Last known encoder ticks
-int32_t last_left_encoder_ticks = -1;
-int32_t last_right_encoder_ticks = -1;
 
 void setup() {
   // Wait for a connection to the Raspberry Pi
@@ -134,29 +126,10 @@ void loop() {
    *
    * To help verify the data sent is accurate, look for the "S" character at the
    * beginning and the \r\n at the end.
-   *
-   * Also only publish data if any of the sensor readings have changed to avoid
-   * spamming.
    */
-  if (!DoubleEquals(latitude, last_latitude) ||
-      !DoubleEquals(longitude, last_longitude) ||
-      (last_left_encoder_ticks != left_encoder_ticks) ||
-      (last_right_encoder_ticks != right_encoder_ticks)) {
-    Serial.println(String("S") + " " + String(latitude) + " " +
-                   String(longitude) + " " + String(left_encoder_ticks) + " " +
-                   String(right_encoder_ticks));
-  }
-
-  // Update the last readings:
-#if ENABLE_GPS
-  last_latitude = latitude;
-  last_longitude = longitude;
-#endif
-
-#if ENABLE_ENCODERS
-  last_left_encoder_ticks = left_encoder_ticks;
-  last_right_encoder_ticks = right_encoder_ticks;
-#endif
+  Serial.println(String("S") + " " + String(latitude) + " " +
+                 String(longitude) + " " + String(left_encoder_ticks) + " " +
+                 String(right_encoder_ticks));
 
   // Need a small delay to prevent Arduino thrashing
   delay(10);
