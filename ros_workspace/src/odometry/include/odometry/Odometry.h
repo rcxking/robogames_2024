@@ -53,8 +53,12 @@ public:
 		vel_buffer_size_ = 20;
 		lin_vel_buffer_ = new double[vel_buffer_size_];
 		ang_vel_buffer_ = new double[vel_buffer_size_];
+		left_vel_buffer_ = new double[vel_buffer_size_];
+		right_vel_buffer_ = new double[vel_buffer_size_];
 		memset(lin_vel_buffer_, 0, sizeof(double)*vel_buffer_size_);
 		memset(ang_vel_buffer_, 0, sizeof(double)*vel_buffer_size_);
+		memset(left_vel_buffer_, 0, sizeof(double)*vel_buffer_size_);
+		memset(right_vel_buffer_, 0, sizeof(double)*vel_buffer_size_);
 
 		// Initialize tf broadcast message
 		odom_trans_.header.frame_id = "odom";
@@ -84,6 +88,16 @@ public:
 		if (ang_vel_buffer_ != nullptr) {
 			delete [] ang_vel_buffer_;
 			ang_vel_buffer_ = nullptr;
+		}
+
+		if (left_vel_buffer_ != nullptr) {
+			delete [] left_vel_buffer_;
+			left_vel_buffer_ = nullptr;
+		}
+
+		if (right_vel_buffer_ != nullptr) {
+			delete [] right_vel_buffer_;
+			right_vel_buffer_ = nullptr;
 		}
 	}
 
@@ -126,6 +140,8 @@ public:
 	size_t GetVelBufferSize() const { return vel_buffer_size_; }
 	double *GetLinVelBuffer() { return lin_vel_buffer_; }
 	double *GetAngVelBuffer() { return ang_vel_buffer_; }
+	double *GetLeftVelBuffer() { return left_vel_buffer_; }
+	double *GetRightVelBuffer() { return right_vel_buffer_; }
 
 	double GetCurLinVelAvg() const { return cur_lin_vel_avg_; }
 	double GetCurAngVelAvg() const { return cur_ang_vel_avg_; }
@@ -159,6 +175,8 @@ private:
 	size_t vel_buffer_size_;
 	double *lin_vel_buffer_;
 	double *ang_vel_buffer_;
+	double *left_vel_buffer_;
+	double *right_vel_buffer_;
 
 	//! Current linear/angular velocities (m/s and rad/s)
 	double cur_lin_vel_avg_, cur_ang_vel_avg_;

@@ -46,6 +46,8 @@ SCENARIO("An Odometry object is constructed", "[Odometry]") {
 			REQUIRE(odom.GetVelBufferSize() == 20);
 			REQUIRE(odom.GetLinVelBuffer() != nullptr);
 			REQUIRE(odom.GetAngVelBuffer() != nullptr);
+			REQUIRE(odom.GetLeftVelBuffer() != nullptr);
+			REQUIRE(odom.GetRightVelBuffer() != nullptr);
 
 			// Ensure the buffers are all 0's
 			const double *lin_buf = odom.GetLinVelBuffer();
