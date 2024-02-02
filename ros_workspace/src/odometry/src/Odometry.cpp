@@ -26,9 +26,11 @@ int32_t Odometry::CalculateTicksDifference(
 
 void Odometry::HandleEncodersMessage(
 		const arduino_connector::Encoders::ConstPtr& msg) {
+#if 0
 	ROS_INFO("%s:%d: Received at time %f seconds: left_encoder_ticks: %d; "
 			"right_encoder_ticks: %d", __FUNCTION__, __LINE__, msg->stamp.toSec(),
 			msg->left_ticks, msg->right_ticks);
+#endif
 
 	const int32_t cur_left_ticks = msg->left_ticks;
 	const int32_t cur_right_ticks = msg->right_ticks;
@@ -38,14 +40,18 @@ void Odometry::HandleEncodersMessage(
 			last_left_encoder_ticks_, cur_left_ticks);
 	const int32_t delta_right_ticks = CalculateTicksDifference(
 			last_right_encoder_ticks_, cur_right_ticks);
+#if 0
   ROS_INFO("%s:%d: delta_left_ticks: %d; delta_right_ticks: %d", __FUNCTION__,
       __LINE__, delta_left_ticks, delta_right_ticks);
+#endif
 
 	// Determine the distance in meters each wheel has traveled this cycle
 	const double left_dist_t = delta_left_ticks * METERS_PER_TICK;
 	const double right_dist_t = delta_right_ticks * METERS_PER_TICK;
+#if 0
   ROS_INFO("%s:%d: left_dist_t: %f meters; right_dist_t: %f meters", __FUNCTION__,
       __LINE__, left_dist_t, right_dist_t);
+#endif
 
 	// Compute the distance the robot midpoint has traveled this cycle
 	const double dist_t = (left_dist_t + right_dist_t) / 2.0;
@@ -72,8 +78,10 @@ void Odometry::HandleEncodersMessage(
 
 	const double left_vel = left_dist_t / delta_time;
 	const double right_vel = right_dist_t / delta_time;
+#if 0
   ROS_INFO("%s:%d: left_vel: %f m/s; right_vel: %f m/s; delta_time: %f seconds",
       __FUNCTION__, __LINE__, left_vel, right_vel, delta_time);
+#endif
 
 	UpdateVelocityAverages(new_linear_vel, new_angular_vel, left_vel, right_vel);
 
