@@ -70,22 +70,22 @@ void Odometry::HandleEncodersMessage(
 	const double new_linear_vel = dist_t / delta_time;
 	const double new_angular_vel = delta_theta_t / delta_time;
 
-	UpdateVelocityAverages(new_linear_vel, new_angular_vel);
-
-  cur_odom_.header.stamp = msg->stamp;
-	cur_odom_.twist.twist.linear.x = cur_lin_vel_avg_;
-	cur_odom_.twist.twist.angular.z = cur_ang_vel_avg_;
-
-	// Publish each side's linear velocity
 	const double left_vel = left_dist_t / delta_time;
 	const double right_vel = right_dist_t / delta_time;
   ROS_INFO("%s:%d: left_vel: %f m/s; right_vel: %f m/s; delta_time: %f seconds",
       __FUNCTION__, __LINE__, left_vel, right_vel, delta_time);
 
+	UpdateVelocityAverages(new_linear_vel, new_angular_vel, left_vel, right_vel);
+
+  cur_odom_.header.stamp = msg->stamp;
+	cur_odom_.twist.twist.linear.x = cur_lin_vel_avg_;
+	cur_odom_.twist.twist.angular.z = cur_ang_vel_avg_;
+
+	// Publish each sides' linear velocity
 	odometry::Velocities vel_msg;
 	vel_msg.stamp = ros::Time::now();
-	vel_msg.left_velocity = left_vel;
-	vel_msg.right_velocity = right_vel;
+	vel_msg.left_velocity = cur_left_vel_avg_;
+	vel_msg.right_velocity = cur_right_vel_avg_;
 	cur_vel_pub_.publish(vel_msg);
 
 	// Update odometry data over tf
@@ -109,7 +109,9 @@ void Odometry::HandleEncodersMessage(
 }
 
 void Odometry::UpdateVelocityAverages(const double lin_vel,
-		                                  const double ang_vel) {
+		                                  const double ang_vel,
+																			const double left_vel,
+																			const double right_vel) {
 	// Current position to update buffer values
 	static size_t cur_pos = 0;
 
@@ -121,13 +123,25 @@ void Odometry::UpdateVelocityAverages(const double lin_vel,
 	const double new_ang_avg = ((vel_buffer_size_ * cur_ang_vel_avg_) -
 			ang_vel_to_drop + ang_vel) / vel_buffer_size_;
 
+	const double left_vel_to_drop = left_vel_buffer_[cur_pos];
+	const double new_left_avg = ((vel_buffer_size_ * cur_left_vel_avg_) -
+			left_vel_to_drop + left_vel) / vel_buffer_size_;
+
+	const double right_vel_to_drop = right_vel_buffer_[cur_pos];
+	const double new_right_avg = ((vel_buffer_size_ * cur_right_vel_avg_) -
+			right_vel_to_drop + right_vel) / vel_buffer_size_;
+
 	// Update buffers with current velocities
 	lin_vel_buffer_[cur_pos] = lin_vel;
 	ang_vel_buffer_[cur_pos] = ang_vel;
+	left_vel_buffer_[cur_pos] = left_vel;
+	right_vel_buffer_[cur_pos] = right_vel;
 
 	// Update current velocity averages
 	cur_lin_vel_avg_ = new_lin_avg;
 	cur_ang_vel_avg_ = new_ang_avg;
+	cur_left_vel_avg_ = new_left_avg;
+	cur_right_vel_avg_ = new_right_avg;
 
 	// Update next position for next call
 	cur_pos = (cur_pos + 1) % vel_buffer_size_;

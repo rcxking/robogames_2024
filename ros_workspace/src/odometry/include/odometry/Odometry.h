@@ -32,7 +32,8 @@ public:
 	Odometry(const std::string& encoder_topic) :
 		encoder_topic_(encoder_topic),
 		last_left_encoder_ticks_(0), last_right_encoder_ticks_(0),
-		cur_lin_vel_avg_(0.0), cur_ang_vel_avg_(0.0) {
+		cur_lin_vel_avg_(0.0), cur_ang_vel_avg_(0.0),
+		cur_left_vel_avg_(0.0), cur_right_vel_avg_(0.0) {
 		// Initialize the previous and current odometry messages
 		prev_odom_.header.stamp = ros::Time::now();
 		prev_odom_.header.frame_id = "odom";
@@ -127,8 +128,11 @@ public:
 	 * filter out encoder aliasing.
 	 * @param lin_vel Latest linear velocity (m/s).
 	 * @param ang_vel Latest angular velocity (rad/s).
+	 * @param left_vel Latest left side velocity (m/s).
+	 * @param right_vel Latest right side velocity (m/s).
 	 */
-	void UpdateVelocityAverages(const double lin_vel, const double ang_vel);
+	void UpdateVelocityAverages(const double lin_vel, const double ang_vel,
+			                        const double left_vel, const double right_vel);
 
 	//! Accessors
 	std::string GetEncoderTopic() const { return encoder_topic_; }
@@ -145,6 +149,9 @@ public:
 
 	double GetCurLinVelAvg() const { return cur_lin_vel_avg_; }
 	double GetCurAngVelAvg() const { return cur_ang_vel_avg_; }
+
+	double GetCurLeftVelAvg() const { return cur_left_vel_avg_; }
+	double GetCurRightVelAvg() const { return cur_right_vel_avg_; }
 
 private:
 	//! Subscribe to this topic for encoder info
@@ -180,6 +187,9 @@ private:
 
 	//! Current linear/angular velocities (m/s and rad/s)
 	double cur_lin_vel_avg_, cur_ang_vel_avg_;
+
+	//! Current left/right velocities (m/s)
+	double cur_left_vel_avg_, cur_right_vel_avg_;
 
 	//! Transform message
 	geometry_msgs::TransformStamped odom_trans_;
