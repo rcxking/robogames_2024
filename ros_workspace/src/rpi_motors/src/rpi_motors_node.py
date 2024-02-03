@@ -21,7 +21,12 @@ class RPIMotorsControl:
         # Proportional constants
         self._kp_left = rospy.get_param('~kp_left')
         self._kp_right = rospy.get_param('~kp_right')
-        rospy.loginfo('kp_left: ' + str(self._kp_left) + '; kp_right: ' + str(self._kp_right))
+        self._kd_left = rospy.get_param('~kd_left')
+        self._kd_right = rospy.get_param('~kd_right')
+        rospy.loginfo('kp_left: ' + str(self._kp_left) +
+                '; kp_right: ' + str(self._kp_right) +
+                '; kd_left: ' + str(self._kd_left) +
+                '; kd_right: ' + str(self._kd_right))
 
         # Current linear velocities (m/s)
         self._cur_left_vel = 0.0
@@ -35,6 +40,10 @@ class RPIMotorsControl:
         # forward; 1000 is full reverse.
         self._cur_left_pwm = 1500
         self._cur_right_pwm = 1500
+
+        # Previous errors
+        self._prev_left_error = 0.0
+        self._prev_right_error = 0.0
 
         # GPIO interface.  GPIO 18 is for the left motor; GPIO 13 is for the
         # right motor.
@@ -92,10 +101,20 @@ class RPIMotorsControl:
         #              '; cur_right_vel: ' + str(self._cur_right_vel) + '; left_error: ' +
         #              str(left_error) + '; right_error: ' + str(right_error))
 
+        # Compute derivative term
+        left_deriv = left_error - self._prev_left_error
+        right_deriv = right_error - self._prev_right_error
+
         # Apply proportional constants to determine the change in velocity (m/s)
-        delta_left_vel_ms = self._kp_left * left_error
-        delta_right_vel_ms = self._kp_right * right_error
+        delta_left_vel_ms = (self._kp_left * left_error) + (self._kd_left *
+                left_deriv)
+        delta_right_vel_ms = (self._kp_right * right_error) + (self._kd_right *
+                right_deriv)
         #rospy.loginfo('delta_left_vel_ms: ' + str(delta_left_vel_ms) + '; delta_right_vel_ms: ' + str(delta_right_vel_ms))
+
+        # Set the last error variables
+        self._prev_left_error = left_error
+        self._prev_right_error = right_error
 
         # Apply current velocity commands
         self._cur_left_pwm += delta_left_vel_ms
@@ -119,6 +138,11 @@ class RPIMotorsControl:
         rospy.loginfo('Changing kp_left to: ' + str(config.kp_left) + '; kp_right to: ' + str(config.kp_right))
         self._kp_left = config.kp_left
         self._kp_right = config.kp_right
+
+        rospy.loginfo('Changing kd_left to: ' + str(config.kd_left) +
+                '; kd_right to: ' + str(config.kd_right))
+        self._kd_left = config.kd_left
+        self._kd_right = config.kd_right
         return config
 
     # Main loop

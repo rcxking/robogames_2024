@@ -12,6 +12,8 @@
   <!-- Motor Controller proportional constants -->
   <arg name="kp_left" default="1.125"/>
   <arg name="kp_right" default="1.125"/>
+  <arg name="kd_left" default="1.0"/>
+  <arg name="kd_right" default="1.0"/>
 
   <!-- Arduino Connector -->
   <group if="$(arg enable_ac)">
@@ -32,6 +34,8 @@
     <include file="$(find rpi_motors)/launch/rpi_motors.launch">
       <arg name="kp_left" value="$(arg kp_left)"/>
       <arg name="kp_right" value="$(arg kp_right)"/>
+      <arg name="kd_left" value="$(arg kd_left)"/>
+      <arg name="kd_right" value="$(arg kd_right)"/>
     </include>
   </group>
 </launch>
