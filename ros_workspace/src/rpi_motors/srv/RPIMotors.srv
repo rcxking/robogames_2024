@@ -1,0 +1,8 @@
+# Desired Left Motor Velocity (m/s)
+float32 left_desired_velocity
+
+# Desired Right Motor Velocity (m/s)
+float32 right_desired_velocity
+---
+# True if successful in sending motor velocities down; false if not.
+bool result

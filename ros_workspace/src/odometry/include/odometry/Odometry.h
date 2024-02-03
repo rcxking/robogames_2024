@@ -13,7 +13,9 @@
 #include <arduino_connector/Encoders.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <odometry/Velocities.h>
 #include <ros/ros.h>
+#include <std_msgs/Float32.h>
 #include <tf/transform_broadcaster.h>
 
 #include <cstring>
@@ -30,7 +32,8 @@ public:
 	Odometry(const std::string& encoder_topic) :
 		encoder_topic_(encoder_topic),
 		last_left_encoder_ticks_(0), last_right_encoder_ticks_(0),
-		cur_lin_vel_avg_(0.0), cur_ang_vel_avg_(0.0) {
+		cur_lin_vel_avg_(0.0), cur_ang_vel_avg_(0.0),
+		cur_left_vel_avg_(0.0), cur_right_vel_avg_(0.0) {
 		// Initialize the previous and current odometry messages
 		prev_odom_.header.stamp = ros::Time::now();
 		prev_odom_.header.frame_id = "odom";
@@ -51,14 +54,18 @@ public:
 		vel_buffer_size_ = 20;
 		lin_vel_buffer_ = new double[vel_buffer_size_];
 		ang_vel_buffer_ = new double[vel_buffer_size_];
+		left_vel_buffer_ = new double[vel_buffer_size_];
+		right_vel_buffer_ = new double[vel_buffer_size_];
 		memset(lin_vel_buffer_, 0, sizeof(double)*vel_buffer_size_);
 		memset(ang_vel_buffer_, 0, sizeof(double)*vel_buffer_size_);
+		memset(left_vel_buffer_, 0, sizeof(double)*vel_buffer_size_);
+		memset(right_vel_buffer_, 0, sizeof(double)*vel_buffer_size_);
 
 		// Initialize tf broadcast message
 		odom_trans_.header.frame_id = "odom";
 		odom_trans_.child_frame_id = "base_link";
 
-		ros::NodeHandle nh;
+		ros::NodeHandle nh("~");
 		// Initialize encoder topic subscriber
 		// TODO: Make the topic a parameter
 		encoder_sub_ = nh.subscribe(encoder_topic_, 100,
@@ -66,6 +73,9 @@ public:
 
 		// Initialize odometry publisher
 		odom_pub_ = nh.advertise<nav_msgs::Odometry>("odom", 100);
+
+		// Initialize left/right velocity publisher
+		cur_vel_pub_ = nh.advertise<odometry::Velocities>("current_velocities", 100);
 	}
 
 	//! Destructor
@@ -79,6 +89,16 @@ public:
 		if (ang_vel_buffer_ != nullptr) {
 			delete [] ang_vel_buffer_;
 			ang_vel_buffer_ = nullptr;
+		}
+
+		if (left_vel_buffer_ != nullptr) {
+			delete [] left_vel_buffer_;
+			left_vel_buffer_ = nullptr;
+		}
+
+		if (right_vel_buffer_ != nullptr) {
+			delete [] right_vel_buffer_;
+			right_vel_buffer_ = nullptr;
 		}
 	}
 
@@ -108,8 +128,11 @@ public:
 	 * filter out encoder aliasing.
 	 * @param lin_vel Latest linear velocity (m/s).
 	 * @param ang_vel Latest angular velocity (rad/s).
+	 * @param left_vel Latest left side velocity (m/s).
+	 * @param right_vel Latest right side velocity (m/s).
 	 */
-	void UpdateVelocityAverages(const double lin_vel, const double ang_vel);
+	void UpdateVelocityAverages(const double lin_vel, const double ang_vel,
+			                        const double left_vel, const double right_vel);
 
 	//! Accessors
 	std::string GetEncoderTopic() const { return encoder_topic_; }
@@ -121,9 +144,14 @@ public:
 	size_t GetVelBufferSize() const { return vel_buffer_size_; }
 	double *GetLinVelBuffer() { return lin_vel_buffer_; }
 	double *GetAngVelBuffer() { return ang_vel_buffer_; }
+	double *GetLeftVelBuffer() { return left_vel_buffer_; }
+	double *GetRightVelBuffer() { return right_vel_buffer_; }
 
 	double GetCurLinVelAvg() const { return cur_lin_vel_avg_; }
 	double GetCurAngVelAvg() const { return cur_ang_vel_avg_; }
+
+	double GetCurLeftVelAvg() const { return cur_left_vel_avg_; }
+	double GetCurRightVelAvg() const { return cur_right_vel_avg_; }
 
 private:
 	//! Subscribe to this topic for encoder info
@@ -154,9 +182,14 @@ private:
 	size_t vel_buffer_size_;
 	double *lin_vel_buffer_;
 	double *ang_vel_buffer_;
+	double *left_vel_buffer_;
+	double *right_vel_buffer_;
 
 	//! Current linear/angular velocities (m/s and rad/s)
 	double cur_lin_vel_avg_, cur_ang_vel_avg_;
+
+	//! Current left/right velocities (m/s)
+	double cur_left_vel_avg_, cur_right_vel_avg_;
 
 	//! Transform message
 	geometry_msgs::TransformStamped odom_trans_;
@@ -166,6 +199,9 @@ private:
 
 	//! Odometry topic publisher
 	ros::Publisher odom_pub_;
+
+	//! Topic to publish the left/right velocities (m/s)
+	ros::Publisher cur_vel_pub_;
 
 	//! Broadcaster to publish odometry via tf
 	tf::TransformBroadcaster tf_broadcaster_;
