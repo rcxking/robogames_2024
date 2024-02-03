@@ -14,16 +14,18 @@ def main():
     motor_srv = rospy.ServiceProxy('/rpi_motor_commands', RPIMotors)
 
     motor_cmd = RPIMotorsRequest()
-    #motor_cmd.left_desired_velocity = 0.0
+    motor_cmd.left_desired_velocity = 0.0
     motor_cmd.right_desired_velocity = 0.0
 
     while not rospy.is_shutdown():
         rospy.loginfo('1 m/s')
-        motor_cmd.right_desired_velocity = 1.0
+        motor_cmd.left_desired_velocity = 1.0
+        #motor_cmd.right_desired_velocity = 1.0
         result = motor_srv(motor_cmd)
         time.sleep(30)
         rospy.loginfo('2 m/s')
-        motor_cmd.right_desired_velocity = 2.0
+        motor_cmd.left_desired_velocity = 2.0
+        #motor_cmd.right_desired_velocity = 2.0
         result = motor_srv(motor_cmd)
         time.sleep(30)
 
