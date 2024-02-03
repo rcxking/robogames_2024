@@ -70,14 +70,6 @@ class RPIMotorsControl:
                       'm/s; right motor:' + str(req.right_desired_velocity) + 'm/s')
         self._des_left_vel = req.left_desired_velocity
         self._des_right_vel = req.right_desired_velocity
-
-        # Publish desired velocities
-        des_vel_msg = Velocities()
-        des_vel_msg.stamp = rospy.Time.now()
-        des_vel_msg.left_velocity = self._des_left_vel
-        des_vel_msg.right_velocity = self._des_right_vel
-        self._desired_vel_pub.publish(des_vel_msg)
-
         return True
 
     # Helper to stop both motors
@@ -135,6 +127,14 @@ class RPIMotorsControl:
         rate = rospy.Rate(200)
         while not rospy.is_shutdown():
             self.ComputeMotorCommand()
+
+            # Publish desired velocities
+            des_vel_msg = Velocities()
+            des_vel_msg.stamp = rospy.Time.now()
+            des_vel_msg.left_velocity = self._des_left_vel
+            des_vel_msg.right_velocity = self._des_right_vel
+            self._desired_vel_pub.publish(des_vel_msg)
+
             rate.sleep()
 
         # On shutdown, stop the motors and perform cleanup
