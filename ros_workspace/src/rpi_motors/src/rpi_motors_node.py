@@ -9,7 +9,7 @@
 
 from dynamic_reconfigure.server import Server
 from odometry.msg import Velocities
-from rpi_motors.cfg import import DynamicParamConfig
+from rpi_motors.cfg import DynamicParamConfig
 from rpi_motors.srv import RPIMotors
 import pigpio
 import rospy
@@ -106,8 +106,8 @@ class RPIMotorsControl:
         rospy.loginfo('delta_left_vel_ms: ' + str(delta_left_vel_ms) + '; delta_right_vel_ms: ' + str(delta_right_vel_ms))
 
         # Apply current velocity commands
-        self._cur_left_pwm += delta_left_vel_pwm
-        self._cur_right_pwm += delta_right_vel_pwm
+        self._cur_left_pwm += delta_left_vel_ms
+        self._cur_right_pwm += delta_right_vel_ms
         rospy.loginfo('cur_left_pwm: ' + str(self._cur_left_pwm) + '; cur_right_pwm: ' + str(self._cur_right_pwm))
 
         # Threshold the current left/right pwm command to be in range [1000, 2000]
@@ -121,7 +121,7 @@ class RPIMotorsControl:
         # Send motor commands
         self._pi.set_servo_pulsewidth(self._LEFT_GPIO_PIN, self._cur_left_pwm)
         self._pi.set_servo_pulsewidth(self._RIGHT_GPIO_PIN, self._cur_right_pwm)
-        
+
     # Callback to handle Dynamic Reconfigure parameters
     def DynamicReconfigureCallback(self, config, level):
         rospy.loginfo('Changing kp_left to: ' + str(config.kp_left) + '; kp_right to: ' + str(config.kp_right))
