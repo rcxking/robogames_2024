@@ -7,7 +7,9 @@
 # Bryant Pong
 # 1/18/24
 
+from dynamic_reconfigure.server import Server
 from odometry.msg import Velocities
+from rpi_motors.cfg import import DynamicParamConfig
 from rpi_motors.srv import RPIMotors
 import pigpio
 import rospy
@@ -51,6 +53,9 @@ class RPIMotorsControl:
 
         # Publisher to publish desired motor velocities
         self._desired_vel_pub = rospy.Publisher('rpi_motor_desired_velocities', Velocities, queue_size=10)
+
+        # Setup dynamic reconfigure server
+        self._reconfigure_server = Server(DynamicParamConfig, callback=self.DynamicReconfigureCallback)
 
         rospy.loginfo('Ready to process and send motor commands')
 
@@ -116,6 +121,11 @@ class RPIMotorsControl:
         # Send motor commands
         self._pi.set_servo_pulsewidth(self._LEFT_GPIO_PIN, self._cur_left_pwm)
         self._pi.set_servo_pulsewidth(self._RIGHT_GPIO_PIN, self._cur_right_pwm)
+        
+    # Callback to handle Dynamic Reconfigure parameters
+    def DynamicReconfigureCallback(self, config, level):
+        rospy.loginfo('Changing kp_left to: ' + str(config.kp_left) + '; kp_right to: ' + str(config.kp_right))
+        return config
 
     # Main loop
     def spin(self):
