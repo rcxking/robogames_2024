@@ -10,8 +10,8 @@
   <arg name="enable_encoders" default="true"/>
 
   <!-- Motor Controller proportional constants -->
-  <arg name="kp_left" default="1.0"/>
-  <arg name="kp_right" default="1.0"/>
+  <arg name="kp_left" default="1.125"/>
+  <arg name="kp_right" default="1.125"/>
 
   <!-- Arduino Connector -->
   <group if="$(arg enable_ac)">
