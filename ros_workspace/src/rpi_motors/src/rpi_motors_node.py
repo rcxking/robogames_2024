@@ -49,6 +49,9 @@ class RPIMotorsControl:
         # Start service to send motor commands
         motor_service = rospy.Service('rpi_motor_commands', RPIMotors, self.HandleMotorCommand)
 
+        # Publisher to publish desired motor velocities
+        self._desired_vel_pub = rospy.Publisher('rpi_motor_desired_velocities', Velocities, queue_size=10)
+
         rospy.loginfo('Ready to process and send motor commands')
 
     # Callback to update robot's current linear velocities
@@ -62,6 +65,14 @@ class RPIMotorsControl:
                       'm/s; right motor:' + str(req.right_desired_velocity) + 'm/s')
         self._des_left_vel = req.left_desired_velocity
         self._des_right_vel = req.right_desired_velocity
+
+        # Publish desired velocities
+        des_vel_msg = Velocities()
+        des_vel_msg.stamp = rospy.Time.now()
+        des_vel_msg.left_velocity = self._des_left_vel
+        des_vel_msg.right_velocity = self._des_right_vel
+        self._desired_vel_pub.publish(des_vel_msg)
+
         return True
 
     # Helper to stop both motors
