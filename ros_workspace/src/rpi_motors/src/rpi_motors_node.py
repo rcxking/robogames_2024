@@ -125,6 +125,8 @@ class RPIMotorsControl:
     # Callback to handle Dynamic Reconfigure parameters
     def DynamicReconfigureCallback(self, config, level):
         rospy.loginfo('Changing kp_left to: ' + str(config.kp_left) + '; kp_right to: ' + str(config.kp_right))
+        self._kp_left = config.kp_left
+        self._kp_right = config.kp_right
         return config
 
     # Main loop
