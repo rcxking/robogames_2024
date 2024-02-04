@@ -118,12 +118,8 @@ class RPIMotorsControl:
         right_deriv = right_error - self._prev_right_error
 
         # Apply proportional constants to determine the change in velocity (m/s)
-        delta_left_vel_ms = (self._kp_left * left_error) +
-                            (self._accumulated_left_error) +
-                            (self._kd_left * left_deriv)
-        delta_right_vel_ms = (self._kp_right * right_error) +
-                             (self._accumulated_right_error) +
-                             (self._kd_right * right_deriv)
+        delta_left_vel_ms = (self._kp_left * left_error) + (self._accumulated_left_error) + (self._kd_left * left_deriv)
+        delta_right_vel_ms = (self._kp_right * right_error) + (self._accumulated_right_error) + (self._kd_right * right_deriv)
         #rospy.loginfo('delta_left_vel_ms: ' + str(delta_left_vel_ms) + '; delta_right_vel_ms: ' + str(delta_right_vel_ms))
 
         # Set the last error variables
