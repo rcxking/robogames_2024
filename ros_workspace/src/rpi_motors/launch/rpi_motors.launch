@@ -3,6 +3,8 @@
   <!-- Proportional constants -->
   <arg name="kp_left" default="1.0"/>
   <arg name="kp_right" default="1.0"/>
+  <arg name="ki_left" default="1.0"/>
+  <arg name="ki_right" default="1.0"/>
   <arg name="kd_left" default="1.0"/>
   <arg name="kd_right" default="1.0"/>
 
@@ -10,6 +12,8 @@
     required="true" output="screen">
     <param name="kp_left" value="$(arg kp_left)"/>
     <param name="kp_right" value="$(arg kp_right)"/>
+    <param name="ki_left" value="$(arg ki_left)"/>
+    <param name="ki_right" value="$(arg ki_right)"/>
     <param name="kd_left" value="$(arg kd_left)"/>
     <param name="kd_right" value="$(arg kd_right)"/>
   </node>
