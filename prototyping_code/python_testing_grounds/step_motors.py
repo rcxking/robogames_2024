@@ -19,13 +19,13 @@ def main():
 
     while not rospy.is_shutdown():
         rospy.loginfo('1 m/s')
-        #motor_cmd.left_desired_velocity = 1.0
+        motor_cmd.left_desired_velocity = 1.0
         motor_cmd.right_desired_velocity = 1.0
         result = motor_srv(motor_cmd)
         time.sleep(30)
-        rospy.loginfo('2 m/s')
-        #motor_cmd.left_desired_velocity = 2.0
-        motor_cmd.right_desired_velocity = 2.0
+        rospy.loginfo('5 m/s')
+        motor_cmd.left_desired_velocity = 5.0
+        motor_cmd.right_desired_velocity = 5.0
         result = motor_srv(motor_cmd)
         time.sleep(30)
 

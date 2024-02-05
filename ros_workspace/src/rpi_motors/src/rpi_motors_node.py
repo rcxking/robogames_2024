@@ -21,10 +21,14 @@ class RPIMotorsControl:
         # Proportional constants
         self._kp_left = rospy.get_param('~kp_left')
         self._kp_right = rospy.get_param('~kp_right')
+        self._ki_left = rospy.get_param('~ki_left')
+        self._ki_right = rospy.get_param('~ki_right')
         self._kd_left = rospy.get_param('~kd_left')
         self._kd_right = rospy.get_param('~kd_right')
         rospy.loginfo('kp_left: ' + str(self._kp_left) +
                 '; kp_right: ' + str(self._kp_right) +
+                '; ki_left: ' + str(self._ki_left) +
+                '; ki_right: ' + str(self._ki_right) +
                 '; kd_left: ' + str(self._kd_left) +
                 '; kd_right: ' + str(self._kd_right))
 
@@ -41,7 +45,11 @@ class RPIMotorsControl:
         self._cur_left_pwm = 1500
         self._cur_right_pwm = 1500
 
-        # Previous errors
+        # Accumulated errors (for I term)
+        self._accumulated_left_error = 0.0
+        self._accumulated_right_error = 0.0
+
+        # Previous errors (for D term)
         self._prev_left_error = 0.0
         self._prev_right_error = 0.0
 
@@ -101,15 +109,17 @@ class RPIMotorsControl:
         #              '; cur_right_vel: ' + str(self._cur_right_vel) + '; left_error: ' +
         #              str(left_error) + '; right_error: ' + str(right_error))
 
+        # Add to accumulated errors integral term
+        self._accumulated_left_error += (self._ki_left * left_error)
+        self._accumulated_right_error += (self._ki_right * right_error)
+
         # Compute derivative term
         left_deriv = left_error - self._prev_left_error
         right_deriv = right_error - self._prev_right_error
 
         # Apply proportional constants to determine the change in velocity (m/s)
-        delta_left_vel_ms = (self._kp_left * left_error) + (self._kd_left *
-                left_deriv)
-        delta_right_vel_ms = (self._kp_right * right_error) + (self._kd_right *
-                right_deriv)
+        delta_left_vel_ms = (self._kp_left * left_error) + (self._accumulated_left_error) + (self._kd_left * left_deriv)
+        delta_right_vel_ms = (self._kp_right * right_error) + (self._accumulated_right_error) + (self._kd_right * right_deriv)
         #rospy.loginfo('delta_left_vel_ms: ' + str(delta_left_vel_ms) + '; delta_right_vel_ms: ' + str(delta_right_vel_ms))
 
         # Set the last error variables
@@ -135,9 +145,15 @@ class RPIMotorsControl:
 
     # Callback to handle Dynamic Reconfigure parameters
     def DynamicReconfigureCallback(self, config, level):
-        rospy.loginfo('Changing kp_left to: ' + str(config.kp_left) + '; kp_right to: ' + str(config.kp_right))
+        rospy.loginfo('Changing kp_left to: ' + str(config.kp_left) +
+                '; kp_right to: ' + str(config.kp_right))
         self._kp_left = config.kp_left
         self._kp_right = config.kp_right
+
+        rospy.loginfo('Changing ki_left to: ' + str(config.ki_left) +
+                '; ki_right to: ' + str(config.ki_right))
+        self._ki_left = config.ki_left
+        self._ki_right = config.ki_right
 
         rospy.loginfo('Changing kd_left to: ' + str(config.kd_left) +
                 '; kd_right to: ' + str(config.kd_right))
