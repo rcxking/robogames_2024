@@ -191,6 +191,8 @@ class RPIMotorsControl:
             des_vel_msg.stamp = rospy.Time.now()
             des_vel_msg.left_velocity = self._des_left_vel
             des_vel_msg.right_velocity = self._des_right_vel
+            des_vel_msg.linear_velocity = (self._des_left_vel + self._des_right_vel) / 2.0
+            des_vel_msg.angular_velocity = (self._des_right_vel - self._des_left_vel) / self._ROBOT_WHEEL_DIST
             self._desired_vel_pub.publish(des_vel_msg)
 
             rate.sleep()
