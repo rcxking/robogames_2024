@@ -58,7 +58,7 @@ class RPIMotorsControl:
         self._pi = pigpio.pi()
         self._LEFT_GPIO_PIN = 18
         self._RIGHT_GPIO_PIN = 13
-        
+
         # Distance between the wheels (meters)
         self._ROBOT_WHEEL_DIST = 0.5715
 
@@ -70,7 +70,7 @@ class RPIMotorsControl:
 
         # Start service to send motor commands (left/right velocities)
         motor_service = rospy.Service('rpi_motor_commands', RPIMotors, self.HandleMotorCommand)
-        
+
         # Service to send motor commands (linear/angular velocities)
         lin_ang_motor_service = rospy.Service('rpi_motor_commands_lin_ang', RPIMotorsLinAng, self.HandleLinAngMotorCommand)
 
@@ -94,16 +94,16 @@ class RPIMotorsControl:
         self._des_left_vel = req.left_desired_velocity
         self._des_right_vel = req.right_desired_velocity
         return True
-    
+
     # Callback to update receiving desired linear/angular velocities
     def HandleLinAngMotorCommand(self, req):
         rospy.loginfo('Received linear: ' + str(req.linear_velocity) +
                       ' m/s; angular: ' + str(req.angular_velocity) + ' rad/s')
-        
+
         # Convert linear/angular velocities to left and right side velocities
         self._des_right_vel = (self._ROBOT_WHEEL_DIST * req.angular_velocity / 2.0) + req.linear_velocity
         self._des_left_vel = (2 * req.linear_velocity) - self._des_right_vel
-        
+
         rospy.loginfo('Setting desired left vel to: ' + str(self._des_left_vel) + ' m/s; right vel to: ' + str(self._des_right_vel) + ' m/s')
         return True
 
