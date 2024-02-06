@@ -1,8 +1,8 @@
 # Desired linear velocity (m/s)
-float32 linear_velocity
+float64 linear_velocity
 
 # Desired angular velocity (rad/s)
-float32 angular_velocity
+float64 angular_velocity
 ---
 # True if successful in sending motor velocities down; false if not.
 bool result

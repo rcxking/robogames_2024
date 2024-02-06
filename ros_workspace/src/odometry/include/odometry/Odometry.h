@@ -15,7 +15,7 @@
 #include <nav_msgs/Odometry.h>
 #include <odometry/Velocities.h>
 #include <ros/ros.h>
-#include <std_msgs/Float32.h>
+#include <std_msgs/Float64.h>
 #include <tf/transform_broadcaster.h>
 
 #include <cstring>
