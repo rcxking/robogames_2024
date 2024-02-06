@@ -12,7 +12,7 @@
 #include <odometry/Odometry.h>
 #include <odometry/Velocities.h>
 #include <ros/ros.h>
-#include <std_msgs/Float32.h>
+#include <std_msgs/Float64.h>
 #include <tf/transform_broadcaster.h>
 
 #include <cmath>
@@ -94,6 +94,8 @@ void Odometry::HandleEncodersMessage(
 	vel_msg.stamp = ros::Time::now();
 	vel_msg.left_velocity = cur_left_vel_avg_;
 	vel_msg.right_velocity = cur_right_vel_avg_;
+	vel_msg.linear_velocity = (cur_left_vel_avg_ + cur_right_vel_avg_) / 2.0;
+	vel_msg.angular_velocity = (cur_right_vel_avg_ - cur_left_vel_avg_) / (2 * WHEEL_TO_MIDPOINT);
 	cur_vel_pub_.publish(vel_msg);
 
 	// Update odometry data over tf

@@ -10,7 +10,7 @@
 from dynamic_reconfigure.server import Server
 from odometry.msg import Velocities
 from rpi_motors.cfg import DynamicParamConfig
-from rpi_motors.srv import RPIMotors
+from rpi_motors.srv import RPIMotors, RPIMotorsLinAng
 import pigpio
 import rospy
 
@@ -59,14 +59,20 @@ class RPIMotorsControl:
         self._LEFT_GPIO_PIN = 18
         self._RIGHT_GPIO_PIN = 13
 
+        # Distance between the wheels (meters)
+        self._ROBOT_WHEEL_DIST = 0.5715
+
         # Send the stop motors command (1500)
         self.StopMotors()
 
         # Start Subscriber to the current motor velocities
         rospy.Subscriber('/odometry/current_velocities', Velocities, self.HandleVelocityMsg)
 
-        # Start service to send motor commands
+        # Start service to send motor commands (left/right velocities)
         motor_service = rospy.Service('rpi_motor_commands', RPIMotors, self.HandleMotorCommand)
+
+        # Service to send motor commands (linear/angular velocities)
+        lin_ang_motor_service = rospy.Service('rpi_motor_commands_lin_ang', RPIMotorsLinAng, self.HandleLinAngMotorCommand)
 
         # Publisher to publish desired motor velocities
         self._desired_vel_pub = rospy.Publisher('rpi_motor_desired_velocities', Velocities, queue_size=10)
@@ -84,9 +90,21 @@ class RPIMotorsControl:
     # Callback to update receiving desired motor velocities
     def HandleMotorCommand(self, req):
         rospy.loginfo('Received left motor: ' + str(req.left_desired_velocity) +
-                      'm/s; right motor:' + str(req.right_desired_velocity) + 'm/s')
+                      ' m/s; right motor: ' + str(req.right_desired_velocity) + ' m/s')
         self._des_left_vel = req.left_desired_velocity
         self._des_right_vel = req.right_desired_velocity
+        return True
+
+    # Callback to update receiving desired linear/angular velocities
+    def HandleLinAngMotorCommand(self, req):
+        rospy.loginfo('Received linear: ' + str(req.linear_velocity) +
+                      ' m/s; angular: ' + str(req.angular_velocity) + ' rad/s')
+
+        # Convert linear/angular velocities to left and right side velocities
+        self._des_right_vel = (self._ROBOT_WHEEL_DIST * req.angular_velocity / 2.0) + req.linear_velocity
+        self._des_left_vel = (2 * req.linear_velocity) - self._des_right_vel
+
+        rospy.loginfo('Setting desired left vel to: ' + str(self._des_left_vel) + ' m/s; right vel to: ' + str(self._des_right_vel) + ' m/s')
         return True
 
     # Helper to stop both motors
@@ -173,6 +191,8 @@ class RPIMotorsControl:
             des_vel_msg.stamp = rospy.Time.now()
             des_vel_msg.left_velocity = self._des_left_vel
             des_vel_msg.right_velocity = self._des_right_vel
+            des_vel_msg.linear_velocity = (self._des_left_vel + self._des_right_vel) / 2.0
+            des_vel_msg.angular_velocity = (self._des_right_vel - self._des_left_vel) / self._ROBOT_WHEEL_DIST
             self._desired_vel_pub.publish(des_vel_msg)
 
             rate.sleep()

@@ -25,6 +25,7 @@ catkin_python_setup()
 add_service_files(
   FILES
     RPIMotors.srv
+    RPIMotorsLinAng.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
