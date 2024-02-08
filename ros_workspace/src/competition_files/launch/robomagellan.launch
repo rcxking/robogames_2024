@@ -4,6 +4,7 @@
   <arg name="enable_ac" default="true"/>
   <arg name="enable_odometry" default="true"/>
   <arg name="enable_diff_drive" default="true"/>
+  <arg name="enable_runner" default="true"/>
 
   <!-- Flags to enable/disable sensors -->
   <arg name="enable_gps" default="true"/>
@@ -40,6 +41,12 @@
       <arg name="ki_right" value="$(arg ki_right)"/>
       <arg name="kd_left" value="$(arg kd_left)"/>
       <arg name="kd_right" value="$(arg kd_right)"/>
+    </include>
+  </group>
+
+  <!-- Main Runner -->
+  <group if="$(arg enable_runner)">
+    <include file="$(find runner)/launch/runner.launch">
     </include>
   </group>
 </launch>
