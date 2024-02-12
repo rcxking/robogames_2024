@@ -17,4 +17,4 @@ else
 fi
 
 # Launch the ROS nodes
-roslaunch competition_files robomagellan.launch enable_gps:=false
+roslaunch competition_files robomagellan.launch
