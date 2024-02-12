@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>runner</name>
+  <name>rpi_motors</name>
   <version>0.1.0</version>
-  <description>Runner is the main program to start the robot.</description>
-
+  <description>
+    Node for the Raspberry Pi to control the Talon SRX motor controllers.
+  </description>
   <maintainer email="rcxking@gmail.com">Bryant Pong</maintainer>
   <license>proprietary</license>
-
 
   <!-- The *depend tags are used to specify dependencies -->
   <!-- Dependencies can be catkin packages or system dependencies -->
@@ -30,20 +30,20 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>arduino_connector</build_depend>
-  <build_depend>coordinate_parser</build_depend>
-  <build_depend>pure_pursuit_controller</build_depend>
-  <build_depend>roscpp</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>odometry</build_depend>
+  <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
 
-  <build_export_depend>arduino_connector</build_export_depend>
-  <build_export_depend>coordinate_parser</build_export_depend>
-  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>dynamic_reconfigure</build_export_depend>
+  <build_export_depend>odometry</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
 
-  <exec_depend>arduino_connector</exec_depend>
-  <exec_depend>coordinate_parser</exec_depend>
-  <exec_depend>pure_pursuit_controller</exec_depend>
-  <exec_depend>roscpp</exec_depend>
+  <exec_depend>dynamic_reconfigure</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>odometry</exec_depend>
+  <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 </package>

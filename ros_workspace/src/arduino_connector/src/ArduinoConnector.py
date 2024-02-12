@@ -7,7 +7,7 @@
 # Bryant Pong
 # 12/8/23
 
-from arduino_connector.msg import GPS
+from arduino_connector.msg import GPS, Encoders
 
 import rospy
 import serial
@@ -22,18 +22,34 @@ class ArduinoConnector():
         # Serial connection to the Arduino
         self._ser = None
 
+        # Enable/Disable sensors
+        self._enable_gps = True
+        self._enable_encoders = True
+
         # Current latitude and longitude (degrees)
         self._latitude = None
         self._longitude = None
 
-        # Last GPS query time
-        self._last_gps_query_time = rospy.Time.now()
+        '''
+        Current encoder ticks.  Positive ticks indicate that the motor is moving
+        forward; negative ticks indicate the motor is moving backward.
+        '''
+        self._left_encoder_ticks = 0
+        self._right_encoder_ticks = 0
 
         '''
         Publishers:
         1) GPS containing current latitude/longitude
+        2) Current left/right encoder ticks
         '''
-        self._gps_pub = rospy.Publisher('current_gps_location', GPS, queue_size=10)
+        self._gps_pub = rospy.Publisher(
+                '/arduino_connector/current_gps_location',
+                GPS,
+                queue_size=10)
+        self._encoders_pub = rospy.Publisher(
+                '/arduino_connector/encoder_ticks',
+                Encoders,
+                queue_size=10)
 
     '''
     Establishes a connection to the Arduino.  The Arduino listens on the
@@ -50,7 +66,7 @@ class ArduinoConnector():
     '''
     def StartArduinoConnection(self, port_name):
         try:
-            self._ser = serial.Serial(port_name, 115200, timeout=1)
+            self._ser = serial.Serial(port_name, 115200, timeout=0)
 
             # Give a 1 second delay for Arduino 150 ms to kick in
             time.sleep(1)
@@ -62,68 +78,61 @@ class ArduinoConnector():
             return False
 
     '''
-    Helper function to read string data from the Arduino until a line with the
-    specified phrase is read.
-
-    search_term is a STRING indicating when to stop.
-
-    Returns the first line containing search_term.
+    Read and parse in the sensor data from Arduino.
     '''
-    def ReadLinesUntil(self, search_term):
-        found_term = False
+    def ParseSensorData(self):
+        '''
+        Read the next sensor data line from the Arduino.  String format is:
+        <GPS latitude> <GPS longitude> <left encoder ticks> <right encoder ticks>
+        '''
 
-        while not found_term:
-            '''
-            readline() reads back a binary array.  Need to convert this into
-            a proper string for parsing.
-            '''
+        # Ensure there's data to read
+        num_bytes_waiting = self._ser.in_waiting
 
-            # Strip trailing newline/carriage returns
-            stripped_data = self._ser.readline().strip()
+        if num_bytes_waiting > 0:
+            # Data is ready to be read.
+            next_line_bytes = self._ser.read(num_bytes_waiting)
 
-            # Convert binary array to ASCII string
-            data = stripped_data.decode('ascii')
+            # Convert string to ASCII
+            next_line_str = next_line_bytes.decode()
 
-            rospy.loginfo('Arduino sent: ' + data)
+            # Ensure the starting 'S' and traling '\n' are in the line:
+            s_in_str = next_line_str[0] == 'S'
+            newline_in_str = '\n' in next_line_str
 
-            found_term = search_term in data
+            if s_in_str and newline_in_str:
+                '''
+                It's possible for multiple lines to be sent together.  Extract
+                just the first line (up to the \r\n).
+                '''
+                first_newline_pos = next_line_str.index('\n')
+                next_line_str = next_line_str[:first_newline_pos+1]
 
-            if found_term:
-                rospy.loginfo('Found ' + search_term + ' in string: ' + data)
-                return data
+                # Strip the trailing newline/carriage return
+                stripped_data = next_line_str.strip()
 
-    '''
-    Helper function to query the GPS coordinates
-    '''
-    def QueryGPS(self):
-        # To prevent spamming for GPS coordinates ask periodically
-        # TODO: Make this a parameter.
-        if rospy.Time.now() - self._last_gps_query_time >= rospy.Duration(1):
-            rospy.loginfo('Querying current GPS location')
-            self._ser.write('GPS'.encode())
+                split_data = stripped_data.split(' ')
 
-            # Read Arduino lines until RES is found
-            coordinate_str = self.ReadLinesUntil('RES ')
+                self._latitude = float(split_data[1])
+                self._longitude = float(split_data[2])
+                self._left_encoder_ticks = int(split_data[3])
+                self._right_encoder_ticks = int(split_data[4])
 
-            # Ensure INVALID wasn't received
-            if not 'INVALID' in coordinate_str:
-                # Response string is of the form RES <latitude> <longitude>
-                split_coordinate_str = coordinate_str.split(' ')
+                # Publish last known GPS coordinate (if enabled)
+                if self._enable_gps:
+                    gps_msg = GPS()
+                    gps_msg.stamp = rospy.Time.now()
+                    gps_msg.latitude = self._latitude
+                    gps_msg.longitude = self._longitude
+                    self._gps_pub.publish(gps_msg)
 
-                self._latitude = float(split_coordinate_str[1])
-                self._longitude = float(split_coordinate_str[2])
-
-                rospy.loginfo('Latitude: ' + str(self._latitude) + '; Longitude: ' +
-                      str(self._longitude))
-
-            self._last_gps_query_time = rospy.Time.now()
-
-        # Publish last known GPS coordinate
-        gps_msg = GPS()
-        gps_msg.stamp = rospy.Time.now()
-        gps_msg.latitude = self._latitude
-        gps_msg.longitude = self._longitude
-        self._gps_pub.publish(gps_msg)
+                # Publish current encoder ticks (if enabled)
+                if self._enable_encoders:
+                    enc_msg = Encoders()
+                    enc_msg.stamp = rospy.Time.now()
+                    enc_msg.left_ticks = self._left_encoder_ticks
+                    enc_msg.right_ticks = self._right_encoder_ticks
+                    self._encoders_pub.publish(enc_msg)
 
     '''
     Main loop.  These tasks will be executed sequentially until the node
@@ -131,12 +140,19 @@ class ArduinoConnector():
     '''
     def MainLoop(self):
         # Polling rate (Hz) TODO: Make this a parameter
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(200)
 
         rospy.loginfo('Starting Arduino Connector MainLoop()')
 
+        # Enable/Disable features as needed
+        self._enable_gps = rospy.get_param('~enable_gps')
+        self._enable_encoders = rospy.get_param('~enable_encoders')
+
+        rospy.loginfo('enable_gps: ' + str(self._enable_gps) +
+                      '; enable_encoders: ' + str(self._enable_encoders))
+
         while not rospy.is_shutdown():
-            self.QueryGPS()
+            self.ParseSensorData()
             rate.sleep()
 
 if __name__ == '__main__':

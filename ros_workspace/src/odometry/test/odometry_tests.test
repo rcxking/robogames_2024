@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="odometry_tests" type="odometry_tests" pkg="odometry"/>
+</launch>

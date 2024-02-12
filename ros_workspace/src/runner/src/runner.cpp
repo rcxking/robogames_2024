@@ -6,11 +6,34 @@
  * Bryant Pong
  * 11/27/23
  */
+#include <arduino_connector/GPS.h>
 #include <coordinate_parser/CoordinateParser.h>
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
 
 #include <string>
+
+// Has a valid GPS location been found?
+bool gps_ready = false;
+
+// Current GPS coordinate (degrees)
+GPSCoordinate current_coordinate;
+
+/**
+ * @brief Callback to update the robot's current latitude/longitude.
+ * @param msg Pointer to the latest coordinate.
+ */
+void HandleNewGPSCoords(const arduino_connector::GPS::ConstPtr& msg) {
+  ROS_INFO("%s:%d: Received new latitude: %f; longitude: %f degrees",
+      __FUNCTION__, __LINE__, msg->latitude, msg->longitude);
+  current_coordinate.latitude = msg->latitude;
+  current_coordinate.longitude = msg->longitude;
+
+  // Mark GPS is ready
+  if (!gps_ready) {
+    gps_ready = true;
+  }
+}
 
 int main(int argc, char **argv) {
 	ROS_INFO("Starting RoboMagellan 2024 Run");
@@ -54,28 +77,14 @@ int main(int argc, char **argv) {
 		ROS_INFO("Starting run");
 	}
 
-#if 0
-	ROS_INFO("%s:%d: Starting sanity check", __FUNCTION__, __LINE__);
+  // Subscriber to acquire the latest GPS coordinate
+  ros::Subscriber latest_gps_coord_sub = nh.subscribe(
+      "/arduino_connector/current_gps_location", 100, HandleNewGPSCoords);
 
-	// Sanity check: Send velocity command to simulator
-	geometry_msgs::Twist vel_cmd;
-	vel_cmd.linear.x = 2.0;
-
-	ros::Publisher vel_pub = nh.advertise<geometry_msgs::Twist>("/robomagellan_2024_diff_drive_controller/cmd_vel", 1);
-
-	ros::Rate loop_rate(10);
+  ros::Rate r(200);
 	while (ros::ok()) {
-		ROS_INFO("%s:%d: Publishing to cmd_vel", __FUNCTION__, __LINE__);
-	  vel_pub.publish(vel_cmd);
-		ros::spinOnce();
-		loop_rate.sleep();
+    ros::spinOnce();
+    r.sleep();
 	}
-#endif
-
-	//
-
-	ros::spin();
 	return 0;
 }
-
-

@@ -8,6 +8,7 @@ add_compile_options(-std=c++11 -Wall -Werror)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  arduino_connector
   coordinate_parser
   pure_pursuit_controller
   roscpp
@@ -99,6 +100,7 @@ catkin_package(
     include
 #  LIBRARIES runner
   CATKIN_DEPENDS
+    arduino_connector
     coordinate_parser
     pure_pursuit_controller
     roscpp
@@ -129,6 +131,9 @@ add_executable(runner
 )
 target_link_libraries(runner
   ${catkin_LIBRARIES}
+)
+add_dependencies(runner
+  ${catkin_EXPORTED_TARGETS}
 )
 
 ## Rename C++ executable without prefix
