@@ -24,8 +24,6 @@ GPSCoordinate current_coordinate;
  */
 void HandleNewSensorStates(
     const arduino_connector::SensorStates::ConstPtr& msg) {
-  ROS_INFO("%s:%d: Received new latitude: %f; longitude: %f degrees",
-      __FUNCTION__, __LINE__, msg->latitude, msg->longitude);
   current_coordinate.latitude = msg->latitude;
   current_coordinate.longitude = msg->longitude;
 
