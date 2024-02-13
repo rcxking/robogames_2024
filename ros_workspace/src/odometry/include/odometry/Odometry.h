@@ -10,7 +10,7 @@
 #ifndef INCLUDE_ODOMETRY_ODOMETRY_H_
 #define INCLUDE_ODOMETRY_ODOMETRY_H_
 
-#include <arduino_connector/Encoders.h>
+#include <arduino_connector/SensorStates.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <odometry/Velocities.h>
@@ -69,7 +69,7 @@ public:
 		// Initialize encoder topic subscriber
 		// TODO: Make the topic a parameter
 		encoder_sub_ = nh.subscribe(encoder_topic_, 100,
-				&Odometry::HandleEncodersMessage, this);
+				&Odometry::HandleSensorStatesMessage, this);
 
 		// Initialize odometry publisher
 		odom_pub_ = nh.advertise<nav_msgs::Odometry>("odom", 100);
@@ -119,9 +119,10 @@ public:
 	/**
 	 * @brief Callback to update the robot's odometry information whenever new
 	 * encoder information is received.
-	 * @param msg The Encoders message received.
+	 * @param msg The SensorStates message received.
 	 */
-	void HandleEncodersMessage(const arduino_connector::Encoders::ConstPtr& msg);
+	void HandleSensorStatesMessage(
+      const arduino_connector::SensorStates::ConstPtr& msg);
 
 	/**
 	 * @brief Updates and computes the average linear/angular velocities to

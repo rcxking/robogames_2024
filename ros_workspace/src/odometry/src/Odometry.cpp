@@ -6,7 +6,7 @@
  *  Created on: Jan 12, 2024
  *      Author: bryant
  */
-#include <arduino_connector/Encoders.h>
+#include <arduino_connector/SensorStates.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <odometry/Odometry.h>
@@ -24,8 +24,8 @@ int32_t Odometry::CalculateTicksDifference(
 	return static_cast<int32_t>(diff);
 }
 
-void Odometry::HandleEncodersMessage(
-		const arduino_connector::Encoders::ConstPtr& msg) {
+void Odometry::HandleSensorStatesMessage(
+		const arduino_connector::SensorStates::ConstPtr& msg) {
 #if 0
 	ROS_INFO("%s:%d: Received at time %f seconds: left_encoder_ticks: %d; "
 			"right_encoder_ticks: %d", __FUNCTION__, __LINE__, msg->stamp.toSec(),
