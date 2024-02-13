@@ -18,6 +18,10 @@
   <arg name="kd_left" default="25.0"/>
   <arg name="kd_right" default="25.0"/>
 
+  <!-- Main Runner node constants -->
+  <arg name="filepath" default="/home/ubuntu/robogames_2024/mission.txt"/>
+  <arg name="use_sim" default="false"/>
+
   <!-- Arduino Connector -->
   <group if="$(arg enable_ac)">
     <include file="$(find arduino_connector)/launch/arduino_connector.launch">
@@ -47,6 +51,8 @@
   <!-- Main Runner -->
   <group if="$(arg enable_runner)">
     <include file="$(find runner)/launch/runner.launch">
+      <arg name="filepath" value="$(arg filepath)"/>
+      <arg name="use_sim" value="$(arg use_sim)"/>
     </include>
   </group>
 </launch>

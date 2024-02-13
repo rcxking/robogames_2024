@@ -1,7 +1,7 @@
 <!-- runner.launch - Starts a RoboMagellan run -->
 <launch>
   <!-- Default file path containing mission coordinates -->
-  <arg name="filepath" default="/home/bryant/robogames_2024/mission.txt"/>
+  <arg name="filepath" default="/home/ubuntu/robogames_2024/mission.txt"/>
 
   <!-- Is this running on a real robot or simulation? -->
   <arg name="use_sim" default="false"/>
