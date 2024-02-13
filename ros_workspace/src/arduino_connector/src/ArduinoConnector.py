@@ -7,7 +7,7 @@
 # Bryant Pong
 # 12/8/23
 
-from arduino_connector.msg import GPS, Encoders
+from arduino_connector.msg import SensorStates
 
 import rospy
 import serial
@@ -38,17 +38,13 @@ class ArduinoConnector():
         self._right_encoder_ticks = 0
 
         '''
-        Publishers:
-        1) GPS containing current latitude/longitude
-        2) Current left/right encoder ticks
+        Publisher of all sensor data sent by the Arduino.  Currently includes:
+        1) Current left/right encoder ticks
+        2) GPS containing current latitude/longitude
         '''
-        self._gps_pub = rospy.Publisher(
-                '/arduino_connector/current_gps_location',
-                GPS,
-                queue_size=10)
-        self._encoders_pub = rospy.Publisher(
-                '/arduino_connector/encoder_ticks',
-                Encoders,
+        self._sensor_pub = rospy.Publisher(
+                '/arduino_connector/current_sensor_states',
+                SensorStates,
                 queue_size=10)
 
     '''
@@ -118,21 +114,19 @@ class ArduinoConnector():
                 self._left_encoder_ticks = int(split_data[3])
                 self._right_encoder_ticks = int(split_data[4])
 
-                # Publish last known GPS coordinate (if enabled)
-                if self._enable_gps:
-                    gps_msg = GPS()
-                    gps_msg.stamp = rospy.Time.now()
-                    gps_msg.latitude = self._latitude
-                    gps_msg.longitude = self._longitude
-                    self._gps_pub.publish(gps_msg)
+                # Construct SensorStates message and publish
+                sensor_msg = SensorStates()
+                sensor_msg.stamp = rospy.Time.now()
 
-                # Publish current encoder ticks (if enabled)
                 if self._enable_encoders:
-                    enc_msg = Encoders()
-                    enc_msg.stamp = rospy.Time.now()
-                    enc_msg.left_ticks = self._left_encoder_ticks
-                    enc_msg.right_ticks = self._right_encoder_ticks
-                    self._encoders_pub.publish(enc_msg)
+                    sensor_msg.left_ticks = self._left_encoder_ticks
+                    sensor_msg.right_ticks = self._right_encoder_ticks
+
+                if self._enable_gps:
+                    sensor_msg.latitude = self._latitude
+                    sensor_msg.longitude = self._longitude
+
+                self._sensor_pub.publish(sensor_msg)
 
     '''
     Main loop.  These tasks will be executed sequentially until the node

@@ -6,7 +6,7 @@
  * Bryant Pong
  * 11/27/23
  */
-#include <arduino_connector/GPS.h>
+#include <arduino_connector/SensorStates.h>
 #include <coordinate_parser/CoordinateParser.h>
 #include <ros/ros.h>
 
@@ -19,10 +19,11 @@ bool gps_ready = false;
 GPSCoordinate current_coordinate;
 
 /**
- * @brief Callback to update the robot's current latitude/longitude.
- * @param msg Pointer to the latest coordinate.
+ * @brief Callback to update the robot's current sensor readings.
+ * @param msg Pointer to the latest sensor states.
  */
-void HandleNewGPSCoords(const arduino_connector::GPS::ConstPtr& msg) {
+void HandleNewSensorStates(
+    const arduino_connector::SensorStates::ConstPtr& msg) {
   ROS_INFO("%s:%d: Received new latitude: %f; longitude: %f degrees",
       __FUNCTION__, __LINE__, msg->latitude, msg->longitude);
   current_coordinate.latitude = msg->latitude;
@@ -78,7 +79,7 @@ int main(int argc, char **argv) {
 
   // Subscriber to acquire the latest GPS coordinate
   ros::Subscriber latest_gps_coord_sub = nh.subscribe(
-      "/arduino_connector/current_gps_location", 100, HandleNewGPSCoords);
+      "/arduino_connector/current_sensor_states", 100, HandleNewSensorStates);
 
   ros::Rate r(200);
 	while (ros::ok()) {
