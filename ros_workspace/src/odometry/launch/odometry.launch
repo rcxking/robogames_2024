@@ -3,8 +3,7 @@
   <!-- Topic containing encoder ticks information -->
   <arg name="encoder_topic" default="/arduino_connector/current_sensor_states"/>
 
-  <node pkg="odometry" type="odometry" name="odometry" required="true"
-    output="screen">
+  <node pkg="odometry" type="odometry" name="odometry" required="true">
     <param name="encoder_topic" value="$(arg encoder_topic)"/>
   </node>
 </launch>

@@ -9,8 +9,10 @@ add_compile_options(-std=c++11 -Wall -Werror)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   arduino_connector
+  catch_ros
   coordinate_parser
   roscpp
+  rostest
   std_msgs
 )
 
@@ -112,7 +114,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -125,7 +127,8 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(runner
-  src/runner.cpp
+  src/Runner.cpp
+  src/main.cpp
 )
 target_link_libraries(runner
   ${catkin_LIBRARIES}
@@ -178,11 +181,10 @@ add_dependencies(runner
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION
+    ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
 
 ## Install launch files
 install(DIRECTORY launch/
@@ -199,12 +201,19 @@ install(DIRECTORY launch/
 #############
 ## Testing ##
 #############
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
 
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_runner.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+  add_rostest(test/runner_tests.test)
 
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+  catch_add_rostest_node(runner_tests
+    src/Runner.cpp
+    test/runner_tests.cpp
+  )
+  target_link_libraries(runner_tests
+    ${catkin_LIBRARIES}
+  )
+  add_dependencies(runner_tests
+    ${catkin_EXPORTED_TARGETS}
+  )
+endif()
