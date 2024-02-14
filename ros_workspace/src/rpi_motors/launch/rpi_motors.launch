@@ -9,7 +9,7 @@
   <arg name="kd_right" default="1.0"/>
 
   <node pkg="rpi_motors" type="rpi_motors_node.py" name="rpi_motors"
-    required="true" output="screen">
+    required="true">
     <param name="kp_left" value="$(arg kp_left)"/>
     <param name="kp_right" value="$(arg kp_right)"/>
     <param name="ki_left" value="$(arg ki_left)"/>
