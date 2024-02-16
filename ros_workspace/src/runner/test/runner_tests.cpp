@@ -77,5 +77,14 @@ SCENARIO("A Runner object is to be used", "[Runner]") {
         REQUIRE(current_coord == GPSCoordinate(3.2, 2.0));
       }
     }
+
+    WHEN("A coordinate is transformed with no file loaded") {
+      MapCoordinate transformed;
+      const bool res = runner.ConvertGPSToMap(GPSCoordinate(0.0, 0.0),
+          &transformed);
+      THEN("The conversion fails due to no starting coordinate present") {
+        REQUIRE(res == false);
+      }
+    }
   }
 }

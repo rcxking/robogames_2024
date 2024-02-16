@@ -80,6 +80,18 @@ bool Runner::ConfirmMissionCoordinates() const {
   return (input == 'Y');
 }
 
+bool Runner::ConvertGPSToMap(const GPSCoordinate &gps_coord,
+                             MapCoordinate *map_coord) const {
+  bool success = false;
+
+  // NULL check
+  if (map_coord != nullptr) {
+  } else {
+    ROS_ERROR("%s:%d: ERROR: map_coord is NULL", __FUNCTION__, __LINE__);
+  }
+  return success;
+}
+
 void Runner::HandleNewSensorStates(
     const arduino_connector::SensorStates::ConstPtr &msg) {
   // Update the current latitude/longitude

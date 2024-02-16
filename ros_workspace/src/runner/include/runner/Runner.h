@@ -16,6 +16,19 @@
 
 #include <string>
 
+class MapCoordinate {
+public:
+  //! Default Constructor
+  MapCoordinate() : x(0.0), y(0.0) {}
+
+  //! Constructor taking in (x, y)
+  MapCoordinate(const double this_x, const double this_y) :
+    x(this_x), y(this_y) {}
+
+  //! Coordinate point (x, y)
+  double x, y;
+};
+
 class Runner {
 public:
   //! Default Constructor
@@ -45,6 +58,13 @@ public:
    * @return True if user accepted mission coordinates; false otherwise.
    */
   bool ConfirmMissionCoordinates() const;
+
+  /**
+   * @brief Converts the provided GPS coordinate into a map coordinate (assumes
+   * that the Earth is flat since the distances are short).
+   */
+  bool ConvertGPSToMap(const GPSCoordinate &gps_coord,
+                       MapCoordinate *map_coord) const;
 
   /**
    * @brief Callback to update the current robot's state from the Arduino
