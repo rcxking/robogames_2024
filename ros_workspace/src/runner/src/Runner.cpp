@@ -23,7 +23,13 @@ bool Runner::LoadCoordinateFile(const std::string &filepath) {
   if (success) {
     ROS_INFO("%s:%d: Successfully loaded coordinates from: %s", __FUNCTION__,
         __LINE__, filepath.c_str());
-    mission_coords_loaded_ = true;
+    // Also set starting GPS coordinate
+    if (cp_.GetStartPoint(&starting_gps_coordinate_)) {
+      mission_coords_loaded_ = true;
+    } else {
+      ROS_ERROR("%s:%d: ERROR: Unable to get starting point", __FUNCTION__,
+          __LINE__);
+    }
   } else {
     ROS_ERROR("%s:%d: ERROR: Failed to load coordinates from: %s", __FUNCTION__,
         __LINE__, filepath.c_str());

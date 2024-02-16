@@ -60,6 +60,9 @@ public:
   const GPSCoordinate &GetCurrentGPSCoordinate() const {
     return current_gps_coordinate_;
   }
+  const GPSCoordinate &GetStartingGPSCoordinate() const {
+    return starting_gps_coordinate_;
+  }
 
 private:
   //! Has mission coordinates been loaded?
@@ -70,6 +73,9 @@ private:
 
   //! Current robot GPS location (latitude/longitude in degrees)
   GPSCoordinate current_gps_coordinate_;
+
+  //! Starting robot GPS location (latitude/longitude in degrees)
+  GPSCoordinate starting_gps_coordinate_;
 
   //! Object that loads and maintains the mission coordinates
   CoordinateParser cp_;

@@ -31,6 +31,7 @@ SCENARIO("A Runner object is to be Constructed", "[Runner]") {
       REQUIRE(runner.MissionCoordinatesLoaded() == false);
       REQUIRE(runner.GPSReady() == false);
       REQUIRE(runner.GetCurrentGPSCoordinate() == GPSCoordinate(0.0, 0.0));
+      REQUIRE(runner.GetStartingGPSCoordinate() == GPSCoordinate(0.0, 0.0));
     }
   }
 }
@@ -54,6 +55,12 @@ SCENARIO("A Runner object is to be used", "[Runner]") {
       THEN("The file successfully loads") {
         REQUIRE(ret == true);
         REQUIRE(runner.MissionCoordinatesLoaded() == true);
+
+        /*
+         * Once coordinates are successfully loaded expecting the starting GPS
+         * coordinate to also be set.
+         */
+        REQUIRE(runner.GetStartingGPSCoordinate() == GPSCoordinate(-0.3, -2.2));
       }
     }
 
