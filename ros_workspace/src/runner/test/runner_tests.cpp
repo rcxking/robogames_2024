@@ -86,5 +86,12 @@ SCENARIO("A Runner object is to be used", "[Runner]") {
         REQUIRE(res == false);
       }
     }
+
+    WHEN("A coordinate is transformed with a file loaded") {
+      const bool ret1 = runner.LoadCoordinateFile(
+          "/home/bryant/robogames_2024/ros_workspace/src/runner/test/good_file.txt");
+      MapCoordinate transformed;
+      const bool ret2 = runner.ConvertGPSToMap(GPSCoordinate(
+    }
   }
 }
