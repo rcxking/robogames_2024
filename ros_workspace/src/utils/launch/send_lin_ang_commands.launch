@@ -1,0 +1,8 @@
+<!--
+  send_lin_ang_commands.launch - Starts utility to send linear/angular velocity
+  commands to the RPI Motors node.
+-->
+<launch>
+  <node pkg="utils" type="send_lin_ang_commands" name="send_lin_ang_commands"
+    required="true" output="screen"/>
+</launch>
