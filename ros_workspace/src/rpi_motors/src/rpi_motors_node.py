@@ -69,13 +69,13 @@ class RPIMotorsControl:
         rospy.Subscriber('/odometry/current_velocities', Velocities, self.HandleVelocityMsg)
 
         # Start service to send motor commands (left/right velocities)
-        motor_service = rospy.Service('rpi_motor_commands', RPIMotors, self.HandleMotorCommand)
+        motor_service = rospy.Service('/rpi_motors/rpi_motor_commands', RPIMotors, self.HandleMotorCommand)
 
         # Service to send motor commands (linear/angular velocities)
-        lin_ang_motor_service = rospy.Service('rpi_motor_commands_lin_ang', RPIMotorsLinAng, self.HandleLinAngMotorCommand)
+        lin_ang_motor_service = rospy.Service('/rpi_motors/rpi_motor_commands_lin_ang', RPIMotorsLinAng, self.HandleLinAngMotorCommand)
 
         # Publisher to publish desired motor velocities
-        self._desired_vel_pub = rospy.Publisher('rpi_motor_desired_velocities', Velocities, queue_size=10)
+        self._desired_vel_pub = rospy.Publisher('/rpi_motors/rpi_motor_desired_velocities', Velocities, queue_size=10)
 
         # Setup dynamic reconfigure server
         self._reconfigure_server = Server(DynamicParamConfig, callback=self.DynamicReconfigureCallback)

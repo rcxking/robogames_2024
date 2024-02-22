@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 
   ros::NodeHandle nh;
   client = nh.serviceClient<rpi_motors::RPIMotorsLinAng>(
-      "rpi_motor_commands_lin_ang");
+      "/rpi_motors/rpi_motor_commands_lin_ang");
 
   // Attach SIGINT signal handler
   signal(SIGINT, ShutdownSignalHandler);
@@ -51,12 +51,15 @@ int main(int argc, char *argv[]) {
     double lin_vel = 0.0, ang_vel = 0.0;
     std::cin >> lin_vel >> ang_vel;
 
-    std::cout << "Sending linear: " << lin_vel << " m/s; angular: " << ang_vel
-      << " rad/s" << std::endl;
+    next_command.request.linear_velocity = lin_vel;
+    next_command.request.angular_velocity = ang_vel;
 
     if (!client.call(next_command)) {
       std::cerr << "ERROR: failed to send command to RPI Motors node" <<
         std::endl;
+    } else {
+      std::cout << "Successfully sent linear: " << lin_vel << " m/s; angular: "
+        << ang_vel << " rad/s" << std::endl;
     }
   }
   return 0;

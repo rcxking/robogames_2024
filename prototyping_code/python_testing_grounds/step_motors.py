@@ -9,9 +9,9 @@ def main():
     rospy.init_node('step_motors')
 
     # Wait for RPI motors service to be available
-    rospy.wait_for_service('/rpi_motor_commands')
+    rospy.wait_for_service('/rpi_motors/rpi_motor_commands')
 
-    motor_srv = rospy.ServiceProxy('/rpi_motor_commands', RPIMotors)
+    motor_srv = rospy.ServiceProxy('/rpi_motors/rpi_motor_commands', RPIMotors)
 
     motor_cmd = RPIMotorsRequest()
     motor_cmd.left_desired_velocity = 0.0
