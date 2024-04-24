@@ -11,6 +11,7 @@ from dynamic_reconfigure.server import Server
 from odometry.msg import Velocities
 from rpi_motors.cfg import DynamicParamConfig
 from rpi_motors.srv import RPIMotors, RPIMotorsLinAng
+import math
 import pigpio
 import rospy
 
@@ -39,6 +40,13 @@ class RPIMotorsControl:
         # Desired linear velocities (m/s)
         self._des_left_vel = 0.0
         self._des_right_vel = 0.0
+
+        '''
+        If a motor's desired velocity is 0 m/s and it has also reached 0 m/s
+        this flag is True.
+        '''
+        self._left_zero_des_zero_reached = True
+        self._right_zero_des_zero_reached = True
 
         # Current motor PWM signals (1000 - 2000).  1500 is STOP; 2000 is full
         # forward; 1000 is full reverse.
@@ -157,9 +165,45 @@ class RPIMotorsControl:
         self._cur_right_pwm = min(2000, self._cur_right_pwm)
         #rospy.loginfo('Thresholded cur_left_pwm: ' + str(self._cur_left_pwm) + '; thresholded cur_right_pwm: ' + str(self._cur_right_pwm))
 
-        # Send motor commands
-        self._pi.set_servo_pulsewidth(self._LEFT_GPIO_PIN, self._cur_left_pwm)
-        self._pi.set_servo_pulsewidth(self._RIGHT_GPIO_PIN, self._cur_right_pwm)
+        '''
+        Send motor commands, with a special case if a motor's desired velocity
+        is 0 m/s and that motor has reached 0 m/s.  No new motor command should
+        be sent to that motor because if someone is trying to move the robot the
+        robot will actively fight back.
+        '''
+        if math.isclose(self._des_left_vel, 0.0, abs_tol=1e-4):
+            if math.isclose(self._cur_left_vel, 0.0, abs_tol=1e-4):
+                # The left motor was commanded to 0 m/s and reached it
+                self._left_zero_des_zero_reached = True
+        else:
+            # Non-zero left velocity received
+            self._left_zero_des_zero_reached = False
+
+        if math.isclose(self._des_right_vel, 0.0, abs_tol=1e-4):
+            if math.isclose(self._cur_right_vel, 0.0, abs_tol=1e-4):
+                # The right motor was commanded to 0 m/s and reached it
+                self._right_zero_des_zero_reached = True
+        else:
+            # Non-zero right velocity received
+            self._right_zero_des_zero_reached = False
+
+        '''
+        Only send motor commands if a motor has not been sent a 0 velocity
+        command or it hasn't reached 0 velocity if commanded to.
+        '''
+        if self._left_zero_des_zero_reached:
+            # Left 0 m/s requested; left reached 0 m/s
+            self._pi.set_servo_pulsewidth(self._LEFT_GPIO_PIN, 1500)
+        else:
+            self._pi.set_servo_pulsewidth(self._LEFT_GPIO_PIN,
+                                          self._cur_left_pwm)
+
+        if self._right_zero_des_zero_reached:
+            # Right 0 m/s requested; right reached 0 m/s
+            self._pi.set_servo_pulsewidth(self._RIGHT_GPIO_PIN, 1500)
+        else:
+            self._pi.set_servo_pulsewidth(self._RIGHT_GPIO_PIN,
+                                          self._cur_right_pwm)
 
     # Callback to handle Dynamic Reconfigure parameters
     def DynamicReconfigureCallback(self, config, level):
