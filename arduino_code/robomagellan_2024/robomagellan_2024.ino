@@ -14,8 +14,8 @@
 // Needed for I2C to GPS
 #include <Wire.h>
 
-// Sparkfun u-blox GNSS Library
-#include <SparkFun_u-blox_GNSS_Arduino_Library.h>
+// Sparkfun u-blox GNSS V3 Library (SAM-M10Q GPS)
+#include <SparkFun_u-blox_GNSS_v3.h>
 
 // Sparkfun ICM-20948 9 DOF IMU Library
 #include <ICM_20948.h>
