@@ -17,8 +17,8 @@
 // Sparkfun u-blox GNSS V3 Library (SAM-M10Q GPS)
 #include <SparkFun_u-blox_GNSS_v3.h>
 
-// Sparkfun ICM-20948 9 DOF IMU Library
-#include <ICM_20948.h>
+// Sparkfun BN008x 9 DOF IMU Library
+#include "SparkFun_BNO08x_Arduino_Library.h"
 
 /*
  * When debugging the Arduino code it can be helpful to enable/disable certain
@@ -65,25 +65,35 @@ Encoder rightEncoder(RIGHT_ENCODER_CHAN_A, RIGHT_ENCODER_CHAN_B);
 int32_t left_encoder_ticks = 0;
 int32_t right_encoder_ticks = 0;
 
-// IMU manager (connected via I2C address 0x69)
-ICM_20948_I2C myICM;
+// IMU manager (connected via I2C address 0x4B)
+BNO08x myIMU;
+
+/*
+ * For the most reliable interaction with the SHTP bus, we need
+ * to use hardware reset control and monitor the H_INT pin.  The
+ * H_INT pin will go low when it's okay to talk on the SHTP bus.
+ * Define as -1 to disable these features.
+ */
+#define BNO08X_INT (A4)
+#define BNO08X_RST (A5)
+#define BNO08X_ADDR (0x4B)
 
 // To reduce traffic from the IMU only update the IMU readings periodically
 unsigned long last_imu_time = 0;
 
 /*
  * Cached IMU values.  These are:
- * 1) Accelerometer XYZ (in milli-g's)
- * 2) Gyroscope XYZ (in degrees per second)
+ * 1) Accelerometer XYZ (in meters/second^2)
+ * 2) Gyroscope XYZ (in radians per second)
  * 3) Magnetometer XYZ (in micro teslas)
  */
-float acc_x_mg = 0.0;
-float acc_y_mg = 0.0;
-float acc_z_mg = 0.0;
+float acc_x_ms2 = 0.0;
+float acc_y_ms2 = 0.0;
+float acc_z_ms2 = 0.0;
 
-float gyr_x_dps = 0.0;
-float gyr_y_dps = 0.0;
-float gyr_z_dps = 0.0;
+float gyr_x_rps = 0.0;
+float gyr_y_rps = 0.0;
+float gyr_z_rps = 0.0;
 
 float mag_x_ut = 0.0;
 float mag_y_ut = 0.0;
@@ -126,18 +136,24 @@ void setup() {
 
   // Initialize IMU (if enabled); on failure stay in setup()
 #if ENABLE_IMU
-  bool imu_initialized = false;
-  while (!imu_initialized) {
-    myICM.begin(Wire, 1);
+  if (myIMU.begin(BNO08X_ADDR, Wire, BNO08X_INT, BNO08X_RST) == false) {
+    Serial.println(F("IMU: Failed to initialize IMU"));
+    while(1);
+  }
 
-    Serial.print(F("Initialization of IMU returned: "));
-    Serial.println(myICM.statusString());
-    if (myICM.status != ICM_20948_Stat_Ok) {
-      Serial.println("IMU: Retrying initialization");
-      delay(500);
-    } else {
-      imu_initialized = true;
-    }
+  // Enable accelerometer
+  if (myIMU.enableAccelerometer() == false) {
+    Serial.println(F("IMU: Failed to enable accelerometer"));
+  }
+
+  // Enable gyroscope
+  if (myIMU.enableGyro() == false) {
+    Serial.println(F("IMU: Failed to enable gyroscope"));
+  }
+
+  // Enable magnetometer
+  if (myIMU.enableMagnetometer() == false) {
+    Serial.println(F("IMU: Failed to enable magnetometer"));
   }
 #endif
 }
@@ -171,19 +187,26 @@ void loop() {
     last_imu_time = millis();
 
     // Update values from the IMU
-    myICM.getAGMT();
+    if (myIMU.getSensorEvent() == true) {
+      const uint8_t sensor_event_id = myIMU.getSensorEventID();
 
-    acc_x_mg = myICM.accX();
-    acc_y_mg = myICM.accY();
-    acc_z_mg = myICM.accZ();
-
-    gyr_x_dps = myICM.gyrX();
-    gyr_y_dps = myICM.gyrY();
-    gyr_z_dps = myICM.gyrZ();
-
-    mag_x_ut = myICM.magX();
-    mag_y_ut = myICM.magY();
-    mag_z_ut = myICM.magZ();
+      if (sensor_event_id == SENSOR_REPORTID_ACCELEROMETER) {
+        // Accelerometer data received
+        acc_x_ms2 = myIMU.getAccelX();
+        acc_y_ms2 = myIMU.getAccelY();
+        acc_z_ms2 = myIMU.getAccelZ();
+      } else if (sensor_event_id == SENSOR_REPORTID_GYROSCOPE_CALIBRATED) {
+        // Gyro data received
+        gyr_x_rps = myIMU.getGyroX();
+        gyr_y_rps = myIMU.getGyroY();
+        gyr_z_rps = myIMU.getGyroZ();
+      } else if (sensor_event_id == SENSOR_REPORTID_MAGNETIC_FIELD) {
+        // Magnetometer data received
+        mag_x_ut = myIMU.getMagX();
+        mag_y_ut = myIMU.getMagY();
+        mag_z_ut = myIMU.getMagZ();
+      }
+    }
   }
 #endif
 
@@ -199,10 +222,10 @@ void loop() {
    */
   Serial.println(String("S") + " " + String(latitude) + " " +
                  String(longitude) + " " + String(left_encoder_ticks) + " " +
-                 String(right_encoder_ticks) + " " + String(acc_x_mg) + " " +
-                 String(acc_y_mg) + " " + String(acc_z_mg) + " " +
-                 String(gyr_x_dps) + " " + String(gyr_y_dps) + " " +
-                 String(gyr_z_dps) + " " + String(mag_x_ut) + " " +
+                 String(right_encoder_ticks) + " " + String(acc_x_ms2) + " " +
+                 String(acc_y_ms2) + " " + String(acc_z_ms2) + " " +
+                 String(gyr_x_rps) + " " + String(gyr_y_rps) + " " +
+                 String(gyr_z_rps) + " " + String(mag_x_ut) + " " +
                  String(mag_y_ut) + " " + String(mag_z_ut));
 
   // Need a small delay to prevent Arduino thrashing
