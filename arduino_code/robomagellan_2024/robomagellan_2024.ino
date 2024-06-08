@@ -106,7 +106,11 @@ void setup() {
   // Need a short 150 ms delay otherwise Serial.print() will execute twice
   delay(150);
 
-  while (!Serial);
+  // Wait for Serial to become available
+  while (!Serial) {
+    delay(10);
+  }
+
   // Start I2C connection
   Wire.begin();
 
@@ -140,21 +144,7 @@ void setup() {
     Serial.println(F("IMU: Failed to initialize IMU"));
     while(1);
   }
-
-  // Enable accelerometer
-  if (myIMU.enableAccelerometer() == false) {
-    Serial.println(F("IMU: Failed to enable accelerometer"));
-  }
-
-  // Enable gyroscope
-  if (myIMU.enableGyro() == false) {
-    Serial.println(F("IMU: Failed to enable gyroscope"));
-  }
-
-  // Enable magnetometer
-  if (myIMU.enableMagnetometer() == false) {
-    Serial.println(F("IMU: Failed to enable magnetometer"));
-  }
+  ConfigureIMU();
 #endif
 }
 
@@ -181,6 +171,10 @@ void loop() {
 #endif
 
 #if ENABLE_IMU
+  if (myIMU.wasReset()) {
+    ConfigureIMU();
+  }
+
   // Update IMU readings periodically to avoid spamming I2C bus
   if (millis() - last_imu_time > 30) {
     // Update time IMU values were updated
@@ -230,4 +224,28 @@ void loop() {
 
   // Need a small delay to prevent Arduino thrashing
   delay(20);
+}
+
+/*
+ * Configure the IMU.  Per https://github.com/sparkfun/SparkFun_BNO08x_Arduino_Library/issues/2
+ * the initial call to enabling any IMU sensor will always fail and cause a sensor reset.
+ */
+void ConfigureIMU() {
+  // Enable accelerometer
+  if (myIMU.enableAccelerometer() == false) {
+    Serial.println(F("IMU: Failed to enable accelerometer"));
+  }
+
+  // Enable gyroscope
+  if (myIMU.enableGyro() == false) {
+    Serial.println(F("IMU: Failed to enable gyroscope"));
+  }
+
+  // Enable magnetometer
+  if (myIMU.enableMagnetometer() == false) {
+    Serial.println(F("IMU: Failed to enable magnetometer"));
+  }
+
+  // Small delay needed to allow configuration to take into effect
+  delay(100);
 }

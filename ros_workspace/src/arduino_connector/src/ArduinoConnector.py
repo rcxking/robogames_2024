@@ -25,17 +25,7 @@ class ArduinoConnector():
         # Enable/Disable sensors
         self._enable_gps = True
         self._enable_encoders = True
-
-        # Current latitude and longitude (degrees)
-        self._latitude = None
-        self._longitude = None
-
-        '''
-        Current encoder ticks.  Positive ticks indicate that the motor is moving
-        forward; negative ticks indicate the motor is moving backward.
-        '''
-        self._left_encoder_ticks = 0
-        self._right_encoder_ticks = 0
+        self._enable_imu = True
 
         '''
         Publisher of all sensor data sent by the Arduino.  Currently includes:
@@ -109,22 +99,67 @@ class ArduinoConnector():
 
                 split_data = stripped_data.split(' ')
 
-                self._latitude = float(split_data[1])
-                self._longitude = float(split_data[2])
-                self._left_encoder_ticks = int(split_data[3])
-                self._right_encoder_ticks = int(split_data[4])
+                # Latitude/Longitude
+                latitude = float(split_data[1])
+                longitude = float(split_data[2])
+
+                # Encoder ticks.  Positive means forward motion; negative
+                # reverse motion.
+                left_encoder_ticks = int(split_data[3])
+                right_encoder_ticks = int(split_data[4])
+
+                # IMU fields.  These are:
+                # Accelerometer XYZ (m/s^2)
+                # Gyroscope XYZ (rad/s)
+                # Magnetometer XYZ (microteslas)
+                accel_x_ms2 = float(split_data[5])
+                accel_y_ms2 = float(split_data[6])
+                accel_z_ms2 = float(split_data[7])
+
+                gyro_x_rps = float(split_data[8])
+                gyro_y_rps = float(split_data[9])
+                gyro_z_rps = float(split_data[10])
+
+                mag_x_ut = float(split_data[11])
+                mag_y_ut = float(split_data[12])
+                mag_z_ut = float(split_data[13])
 
                 # Construct SensorStates message and publish
                 sensor_msg = SensorStates()
                 sensor_msg.stamp = rospy.Time.now()
 
                 if self._enable_encoders:
-                    sensor_msg.left_ticks = self._left_encoder_ticks
-                    sensor_msg.right_ticks = self._right_encoder_ticks
+                    sensor_msg.left_ticks = left_encoder_ticks
+                    sensor_msg.right_ticks = right_encoder_ticks
 
                 if self._enable_gps:
-                    sensor_msg.latitude = self._latitude
-                    sensor_msg.longitude = self._longitude
+                    sensor_msg.latitude = latitude
+                    sensor_msg.longitude = longitude
+
+                if self._enable_imu:
+                    # Accelerometer
+                    sensor_msg.imu.linear_acceleration.x = accel_x_ms2
+                    sensor_msg.imu.linear_acceleration.y = accel_y_ms2
+                    sensor_msg.imu.linear_acceleration.z = accel_z_ms2
+
+                    # Gyroscope
+                    sensor_msg.imu.angular_velocity.x = gyro_x_rps
+                    sensor_msg.imu.angular_velocity.y = gyro_y_rps
+                    sensor_msg.imu.angular_velocity.z = gyro_z_rps
+
+                    # Converting magnetometer readings to orientation.
+                    # Because the robot is treated as a planar one, we only care
+                    # about the heading given by the following piecewise
+                    # equation relying on the magnetometer's x/y readings:
+                    #
+                    # Orientation is in DEGREES
+                    # y > 0: 90 - atan(x/y)
+                    # y < 0: 270 - atan(x/y)
+                    # y = 0 && x < 0: 180
+                    # y = 0 && x > 0: 0
+                    rospy.loginfo('x: ' + str(mag_x_ut) + '; y: ' +
+                            str(mag_y_ut) + '; z: ' + str(mag_z_ut))
+
 
                 self._sensor_pub.publish(sensor_msg)
 
@@ -141,9 +176,11 @@ class ArduinoConnector():
         # Enable/Disable features as needed
         self._enable_gps = rospy.get_param('~enable_gps')
         self._enable_encoders = rospy.get_param('~enable_encoders')
+        self._enable_imu = rospy.get_param('~enable_imu')
 
         rospy.loginfo('enable_gps: ' + str(self._enable_gps) +
-                      '; enable_encoders: ' + str(self._enable_encoders))
+                      '; enable_encoders: ' + str(self._enable_encoders) +
+                      '; enable_imu: ' + str(self._enable_imu))
 
         while not rospy.is_shutdown():
             self.ParseSensorData()

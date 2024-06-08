@@ -5,9 +5,13 @@ project(arduino_connector)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  geometry_msgs
   message_generation
   rospy
+  sensor_msgs
   std_msgs
+  tf2
+  tf2_ros
 )
 
 ## System dependencies are found with CMake's conventions
@@ -66,7 +70,8 @@ add_message_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  std_msgs  # Or other packages containing msgs
+  sensor_msgs
+  std_msgs # Or other packages containing msgs
 )
 
 ################################################
@@ -102,7 +107,13 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES arduino_connector
   CATKIN_DEPENDS
+    geometry_msgs
     message_runtime
+    rospy
+    sensor_msgs
+    std_msgs
+    tf2
+    tf2_ros
 #  DEPENDS system_lib
 )
 
