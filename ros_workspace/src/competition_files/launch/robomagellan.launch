@@ -7,6 +7,7 @@
   <arg name="enable_runner" default="true"/>
 
   <!-- Flags to enable/disable sensors -->
+  <arg name="enable_imu" default="true"/>
   <arg name="enable_gps" default="true"/>
   <arg name="enable_encoders" default="true"/>
 

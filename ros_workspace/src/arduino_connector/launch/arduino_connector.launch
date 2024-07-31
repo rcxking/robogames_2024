@@ -2,11 +2,13 @@
 <launch>
   <!-- Flags to enable/disable sensors -->
   <arg name="enable_gps" default="true"/>
+  <arg name="enable_imu" default="true"/>
   <arg name="enable_encoders" default="true"/>
 
   <node pkg="arduino_connector" type="ArduinoConnector.py"
     name="arduino_connector" required="true">
     <param name="enable_gps" value="$(arg enable_gps)"/>
+    <param name="enable_imu" value="$(arg enable_imu)"/>
     <param name="enable_encoders" value="$(arg enable_encoders)"/>
   </node>
 </launch>
