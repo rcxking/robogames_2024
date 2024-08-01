@@ -8,7 +8,7 @@
 # 12/8/23
 
 from arduino_connector.msg import SensorStates
-
+from sensor_msgs.msg import MagneticField, Imu
 import rospy
 import serial
 import time
@@ -26,6 +26,10 @@ class ArduinoConnector():
         self._enable_gps = True
         self._enable_encoders = True
         self._enable_imu = True
+
+        # IMU publishers
+        self._imu_raw_pub = rospy.Publisher('/imu/raw', Imu, queue_size=10)
+        self._imu_mag_pub = rospy.Publisher('/imu/mag', MagneticField, queue_size=10)
 
         '''
         Publisher of all sensor data sent by the Arduino.  Currently includes:
@@ -68,100 +72,115 @@ class ArduinoConnector():
     '''
     def ParseSensorData(self):
         '''
-        Read the next sensor data line from the Arduino.  String format is:
-        <GPS latitude> <GPS longitude> <left encoder ticks> <right encoder ticks>
+        Read next line from the Arduino.  Because the Arduino and PySerial code
+        execute quickly, we need to ensure the data is complete before parsing.
         '''
+        if self._ser.in_waiting > 0:
+            # Read complete line from serial output (may be incomplete)
+            line = self._ser.readline()
 
-        # Ensure there's data to read
-        num_bytes_waiting = self._ser.in_waiting
+            # If no newline detected, continue to read
+            while not '\\n' in str(line):
+                # Keep reading in next chunk
+                temp = self._ser.readline()
 
-        if num_bytes_waiting > 0:
-            # Data is ready to be read.
-            next_line_bytes = self._ser.read(num_bytes_waiting)
+                # Longer strings may require multiple passes to get full line
+                if temp.decode():
+                    line = (line.decode() + temp.decode()).encode()
 
-            # Convert string to ASCII
-            next_line_str = next_line_bytes.decode()
+            # Decode from bytes
+            line = line.decode()
+            # Strip leading and trailing spaces
+            line = line.strip()
 
-            # Ensure the starting 'S' and traling '\n' are in the line:
-            s_in_str = next_line_str[0] == 'S'
-            newline_in_str = '\n' in next_line_str
+            # Expecting our data to start with 'S'; if it doesn't it's a debug
+            if line[0] != 'S':
+                return
+            else:
+                rospy.loginfo(line)
 
-            if s_in_str and newline_in_str:
-                '''
-                It's possible for multiple lines to be sent together.  Extract
-                just the first line (up to the \r\n).
-                '''
-                first_newline_pos = next_line_str.index('\n')
-                next_line_str = next_line_str[:first_newline_pos+1]
+            # Begin parsing data
+            split_data = line.split(' ')
 
-                # Strip the trailing newline/carriage return
-                stripped_data = next_line_str.strip()
+            # Latitude/Longitude
+            latitude = float(split_data[1])
+            longitude = float(split_data[2])
 
-                split_data = stripped_data.split(' ')
+            # Encoder ticks.  Positive means forward motion; negative
+            # reverse motion.
+            left_encoder_ticks = int(split_data[3])
+            right_encoder_ticks = int(split_data[4])
 
-                # Latitude/Longitude
-                latitude = float(split_data[1])
-                longitude = float(split_data[2])
+            # IMU fields.  These are:
+            # Accelerometer XYZ (m/s^2)
+            # Gyroscope XYZ (rad/s)
+            # Magnetometer XYZ (microteslas)
+            accel_x_ms2 = float(split_data[5])
+            accel_y_ms2 = float(split_data[6])
+            accel_z_ms2 = float(split_data[7])
 
-                # Encoder ticks.  Positive means forward motion; negative
-                # reverse motion.
-                left_encoder_ticks = int(split_data[3])
-                right_encoder_ticks = int(split_data[4])
+            gyro_x_rps = float(split_data[8])
+            gyro_y_rps = float(split_data[9])
+            gyro_z_rps = float(split_data[10])
 
-                # IMU fields.  These are:
-                # Accelerometer XYZ (m/s^2)
-                # Gyroscope XYZ (rad/s)
-                # Magnetometer XYZ (microteslas)
-                accel_x_ms2 = float(split_data[5])
-                accel_y_ms2 = float(split_data[6])
-                accel_z_ms2 = float(split_data[7])
+            mag_x_ut = float(split_data[11])
+            mag_y_ut = float(split_data[12])
+            mag_z_ut = float(split_data[13])
 
-                gyro_x_rps = float(split_data[8])
-                gyro_y_rps = float(split_data[9])
-                gyro_z_rps = float(split_data[10])
+            quat_i = float(split_data[14])
+            quat_j = float(split_data[15])
+            quat_k = float(split_data[16])
+            quat_real = float(split_data[17])
 
-                mag_x_ut = float(split_data[11])
-                mag_y_ut = float(split_data[12])
-                mag_z_ut = float(split_data[13])
+            # Construct SensorStates message and publish
+            curr_time = rospy.Time.now()
+            sensor_msg = SensorStates()
+            sensor_msg.stamp = curr_time
 
-                # Construct SensorStates message and publish
-                sensor_msg = SensorStates()
-                sensor_msg.stamp = rospy.Time.now()
+            if self._enable_encoders:
+                sensor_msg.left_ticks = left_encoder_ticks
+                sensor_msg.right_ticks = right_encoder_ticks
 
-                if self._enable_encoders:
-                    sensor_msg.left_ticks = left_encoder_ticks
-                    sensor_msg.right_ticks = right_encoder_ticks
+            if self._enable_gps:
+                sensor_msg.latitude = latitude
+                sensor_msg.longitude = longitude
 
-                if self._enable_gps:
-                    sensor_msg.latitude = latitude
-                    sensor_msg.longitude = longitude
+            if self._enable_imu:
+                # Construct IMU messages
+                imu_raw_msg = Imu()
+                imu_raw_msg.header.stamp = curr_time
+                imu_raw_msg.orientation_covariance[0] = -1
+                imu_raw_msg.linear_acceleration_covariance[0] = -1
+                imu_raw_msg.angular_velocity_covariance[0] = -1
 
-                if self._enable_imu:
-                    # Accelerometer
-                    sensor_msg.imu.linear_acceleration.x = accel_x_ms2
-                    sensor_msg.imu.linear_acceleration.y = accel_y_ms2
-                    sensor_msg.imu.linear_acceleration.z = accel_z_ms2
+                imu_mag_msg = MagneticField()
+                imu_mag_msg.header.stamp = curr_time
 
-                    # Gyroscope
-                    sensor_msg.imu.angular_velocity.x = gyro_x_rps
-                    sensor_msg.imu.angular_velocity.y = gyro_y_rps
-                    sensor_msg.imu.angular_velocity.z = gyro_z_rps
+                # Accelerometer
+                imu_raw_msg.linear_acceleration.x = accel_x_ms2
+                imu_raw_msg.linear_acceleration.y = accel_y_ms2
+                imu_raw_msg.linear_acceleration.z = accel_z_ms2
 
-                    # Converting magnetometer readings to orientation.
-                    # Because the robot is treated as a planar one, we only care
-                    # about the heading given by the following piecewise
-                    # equation relying on the magnetometer's x/y readings:
-                    #
-                    # Orientation is in DEGREES
-                    # y > 0: 90 - atan(x/y)
-                    # y < 0: 270 - atan(x/y)
-                    # y = 0 && x < 0: 180
-                    # y = 0 && x > 0: 0
-                    rospy.loginfo('x: ' + str(mag_x_ut) + '; y: ' +
-                            str(mag_y_ut) + '; z: ' + str(mag_z_ut))
+                # Gyroscope
+                imu_raw_msg.angular_velocity.x = gyro_x_rps
+                imu_raw_msg.angular_velocity.y = gyro_y_rps
+                imu_raw_msg.angular_velocity.z = gyro_z_rps
 
+                # Orientation quaternion
+                imu_raw_msg.orientation.w = quat_real
+                imu_raw_msg.orientation.x = quat_i
+                imu_raw_msg.orientation.y = quat_j
+                imu_raw_msg.orientation.z = quat_k
 
-                self._sensor_pub.publish(sensor_msg)
+                # Magnetometer (Teslas)
+                imu_mag_msg.magnetic_field.x = mag_x_ut * 1e-6
+                imu_mag_msg.magnetic_field.y = mag_y_ut * 1e-6
+                imu_mag_msg.magnetic_field.z = mag_z_ut * 1e-6
+
+                self._imu_raw_pub.publish(imu_raw_msg)
+                self._imu_mag_pub.publish(imu_mag_msg)
+
+            self._sensor_pub.publish(sensor_msg)
 
     '''
     Main loop.  These tasks will be executed sequentially until the node
@@ -181,6 +200,9 @@ class ArduinoConnector():
         rospy.loginfo('enable_gps: ' + str(self._enable_gps) +
                       '; enable_encoders: ' + str(self._enable_encoders) +
                       '; enable_imu: ' + str(self._enable_imu))
+
+        # Flush the Serial input buffer
+        self._ser.reset_input_buffer()
 
         while not rospy.is_shutdown():
             self.ParseSensorData()
