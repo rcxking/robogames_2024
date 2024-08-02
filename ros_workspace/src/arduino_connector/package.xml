@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>arduino_connector</name>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <description>ROS-side node to send commands to the Arduino</description>
 
   <maintainer email="rcxking@gmail.com">Bryant Pong</maintainer>
@@ -10,7 +10,7 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
+  <license>proprietary</license>
 
   <!-- The *depend tags are used to specify dependencies -->
   <!-- Dependencies can be catkin packages or system dependencies -->

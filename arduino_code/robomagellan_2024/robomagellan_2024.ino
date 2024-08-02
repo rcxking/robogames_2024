@@ -86,6 +86,7 @@ unsigned long last_imu_time = 0;
  * 1) Accelerometer XYZ (in meters/second^2)
  * 2) Gyroscope XYZ (in radians per second)
  * 3) Magnetometer XYZ (in micro teslas)
+ * 4) Rotation quaternion
  */
 float acc_x_ms2 = 0.0;
 float acc_y_ms2 = 0.0;
@@ -98,6 +99,11 @@ float gyr_z_rps = 0.0;
 float mag_x_ut = 0.0;
 float mag_y_ut = 0.0;
 float mag_z_ut = 0.0;
+
+float quat_i = 0.0;
+float quat_j = 0.0;
+float quat_k = 0.0;
+float quat_real = 0.0;
 
 void setup() {
   // Wait for a connection to the Raspberry Pi
@@ -199,6 +205,11 @@ void loop() {
         mag_x_ut = myIMU.getMagX();
         mag_y_ut = myIMU.getMagY();
         mag_z_ut = myIMU.getMagZ();
+      } else if (sensor_event_id == SENSOR_REPORTID_ROTATION_VECTOR) {
+        quat_i = myIMU.getQuatI();
+        quat_j = myIMU.getQuatJ();
+        quat_k = myIMU.getQuatK();
+        quat_real = myIMU.getQuatReal();
       }
     }
   }
@@ -220,7 +231,9 @@ void loop() {
                  String(acc_y_ms2) + " " + String(acc_z_ms2) + " " +
                  String(gyr_x_rps) + " " + String(gyr_y_rps) + " " +
                  String(gyr_z_rps) + " " + String(mag_x_ut) + " " +
-                 String(mag_y_ut) + " " + String(mag_z_ut));
+                 String(mag_y_ut) + " " + String(mag_z_ut) + " " +
+                 String(quat_i) + " " + String(quat_j) + " " +
+                 String(quat_k) + " " + String(quat_real));
 
   // Need a small delay to prevent Arduino thrashing
   delay(20);
@@ -244,6 +257,11 @@ void ConfigureIMU() {
   // Enable magnetometer
   if (myIMU.enableMagnetometer() == false) {
     Serial.println(F("IMU: Failed to enable magnetometer"));
+  }
+
+  // Enable rotation vector
+  if (myIMU.enableRotationVector() == false) {
+    Serial.println(F("IMU: Failed to enable rotation vector"));
   }
 
   // Small delay needed to allow configuration to take into effect
