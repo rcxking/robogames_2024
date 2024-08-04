@@ -56,7 +56,7 @@ SCENARIO("A Runner object is to be used", "[Runner]") {
         REQUIRE(runner.MissionCoordinatesLoaded() == true);
       }
     }
-
+#if 0
     WHEN("A new SensorStates message is received") {
       arduino_connector::SensorStates::Ptr msg_ptr(
           new arduino_connector::SensorStates());
@@ -70,5 +70,6 @@ SCENARIO("A Runner object is to be used", "[Runner]") {
         REQUIRE(current_coord == GPSCoordinate(3.2, 2.0));
       }
     }
+#endif
   }
 }

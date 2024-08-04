@@ -8,10 +8,38 @@
 # 12/8/23
 
 from arduino_connector.msg import SensorStates
-from sensor_msgs.msg import MagneticField, Imu
+from enum import Enum
+from sensor_msgs.msg import Imu, MagneticField, NavSatFix
 import rospy
 import serial
 import time
+
+'''
+Sensor value indices.  These MUST match the order found in the Arduino code.
+'''
+SENSOR_VALUE_NAMES = [
+    'GPS_LATITUDE_DEGS',
+    'GPS_LONGITUDE_DEGS',
+    'GPS_ALTITUDE_M',
+    'LEFT_ENCODER_TICKS',
+    'RIGHT_ENCODER_TICKS',
+    'ACC_X_MS2',
+    'ACC_Y_MS2',
+    'ACC_Z_MS2',
+    'GYR_X_RPS',
+    'GYR_Y_RPS',
+    'GYR_Z_RPS',
+    'MAG_X_T',
+    'MAG_Y_T',
+    'MAG_Z_T',
+    'QUAT_I',
+    'QUAT_J',
+    'QUAT_K',
+    'QUAT_REAL',
+    'NUM_SENSOR_VALUES'
+]
+
+SensorValues = Enum('SensorValues', SENSOR_VALUE_NAMES)
 
 '''
 Helper class to establish and maintain a serial connection to the Arduino.
@@ -31,10 +59,12 @@ class ArduinoConnector():
         self._imu_raw_pub = rospy.Publisher('/imu/raw', Imu, queue_size=10)
         self._imu_mag_pub = rospy.Publisher('/imu/mag', MagneticField, queue_size=10)
 
+        # GPS Publisher
+        self._gps_pub = rospy.Publisher('/gps', NavSatFix, queue_size=10)
+
         '''
         Publisher of all sensor data sent by the Arduino.  Currently includes:
         1) Current left/right encoder ticks
-        2) GPS containing current latitude/longitude
         '''
         self._sensor_pub = rospy.Publisher(
                 '/arduino_connector/current_sensor_states',
@@ -103,34 +133,35 @@ class ArduinoConnector():
             split_data = line.split(' ')
 
             # Latitude/Longitude
-            latitude = float(split_data[1])
-            longitude = float(split_data[2])
+            latitude = float(split_data[SensorValues.GPS_LATITUDE_DEGS.value])
+            longitude = float(split_data[SensorValues.GPS_LONGITUDE_DEGS.value])
+            altitude = float(split_data[SensorValues.GPS_ALTITUDE_M.value])
 
             # Encoder ticks.  Positive means forward motion; negative
             # reverse motion.
-            left_encoder_ticks = int(split_data[3])
-            right_encoder_ticks = int(split_data[4])
+            left_encoder_ticks = int(split_data[SensorValues.LEFT_ENCODER_TICKS.value])
+            right_encoder_ticks = int(split_data[SensorValues.RIGHT_ENCODER_TICKS.value])
 
             # IMU fields.  These are:
             # Accelerometer XYZ (m/s^2)
             # Gyroscope XYZ (rad/s)
-            # Magnetometer XYZ (microteslas)
-            accel_x_ms2 = float(split_data[5])
-            accel_y_ms2 = float(split_data[6])
-            accel_z_ms2 = float(split_data[7])
+            # Magnetometer XYZ (Teslas)
+            accel_x_ms2 = float(split_data[SensorValues.ACC_X_MS2.value])
+            accel_y_ms2 = float(split_data[SensorValues.ACC_Y_MS2.value])
+            accel_z_ms2 = float(split_data[SensorValues.ACC_Z_MS2.value])
 
-            gyro_x_rps = float(split_data[8])
-            gyro_y_rps = float(split_data[9])
-            gyro_z_rps = float(split_data[10])
+            gyro_x_rps = float(split_data[SensorValues.GYR_X_RPS.value])
+            gyro_y_rps = float(split_data[SensorValues.GYR_Y_RPS.value])
+            gyro_z_rps = float(split_data[SensorValues.GYR_Z_RPS.value])
 
-            mag_x_ut = float(split_data[11])
-            mag_y_ut = float(split_data[12])
-            mag_z_ut = float(split_data[13])
+            mag_x_t = float(split_data[SensorValues.MAG_X_T.value])
+            mag_y_t = float(split_data[SensorValues.MAG_Y_T.value])
+            mag_z_t = float(split_data[SensorValues.MAG_Z_T.value])
 
-            quat_i = float(split_data[14])
-            quat_j = float(split_data[15])
-            quat_k = float(split_data[16])
-            quat_real = float(split_data[17])
+            quat_i = float(split_data[SensorValues.QUAT_I.value])
+            quat_j = float(split_data[SensorValues.QUAT_J.value])
+            quat_k = float(split_data[SensorValues.QUAT_K.value])
+            quat_real = float(split_data[SensorValues.QUAT_REAL.value])
 
             # Construct SensorStates message and publish
             curr_time = rospy.Time.now()
@@ -142,8 +173,15 @@ class ArduinoConnector():
                 sensor_msg.right_ticks = right_encoder_ticks
 
             if self._enable_gps:
-                sensor_msg.latitude = latitude
-                sensor_msg.longitude = longitude
+                # Construct GPS message
+                gps_msg = NavSatFix()
+                gps_msg.header.stamp = curr_time
+
+                gps_msg.latitude = latitude
+                gps_msg.longitude = longitude
+                gps_msg.altitude = altitude
+
+                self._gps_pub.publish(gps_msg)
 
             if self._enable_imu:
                 # Construct IMU messages
@@ -173,9 +211,9 @@ class ArduinoConnector():
                 imu_raw_msg.orientation.z = quat_k
 
                 # Magnetometer (Teslas)
-                imu_mag_msg.magnetic_field.x = mag_x_ut * 1e-6
-                imu_mag_msg.magnetic_field.y = mag_y_ut * 1e-6
-                imu_mag_msg.magnetic_field.z = mag_z_ut * 1e-6
+                imu_mag_msg.magnetic_field.x = mag_x_t
+                imu_mag_msg.magnetic_field.y = mag_y_t
+                imu_mag_msg.magnetic_field.z = mag_z_t
 
                 self._imu_raw_pub.publish(imu_raw_msg)
                 self._imu_mag_pub.publish(imu_mag_msg)

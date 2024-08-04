@@ -77,6 +77,6 @@ bool Runner::ConfirmMissionCoordinates() const {
 void Runner::HandleNewSensorStates(
     const arduino_connector::SensorStates::ConstPtr &msg) {
   // Update the current latitude/longitude
-  current_gps_coordinate_.latitude = msg->latitude;
-  current_gps_coordinate_.longitude = msg->longitude;
+  //current_gps_coordinate_.latitude = msg->latitude;
+  //current_gps_coordinate_.longitude = msg->longitude;
 }

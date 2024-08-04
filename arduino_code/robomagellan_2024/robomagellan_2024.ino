@@ -28,10 +28,6 @@
 #define ENABLE_ENCODERS (1)
 #define ENABLE_IMU (1)
 
-// Cached GPS values
-double latitude = 0.0;
-double longitude = 0.0;
-
 // To reduce I2C traffic from the GPS, only query the GPS every second
 unsigned long last_gps_time = 0;
 
@@ -57,14 +53,6 @@ constexpr int RIGHT_ENCODER_CHAN_B = 18;
 Encoder leftEncoder(LEFT_ENCODER_CHAN_A, LEFT_ENCODER_CHAN_B);
 Encoder rightEncoder(RIGHT_ENCODER_CHAN_A, RIGHT_ENCODER_CHAN_B);
 
-/*
- * Number of ticks each encoder reads.  0 is the home position; positive ticks
- * indicate the motor is going forward; negative ticks indicates motor is
- * reversing.
- */
-int32_t left_encoder_ticks = 0;
-int32_t right_encoder_ticks = 0;
-
 // IMU manager (connected via I2C address 0x4B)
 BNO08x myIMU;
 
@@ -82,28 +70,42 @@ BNO08x myIMU;
 unsigned long last_imu_time = 0;
 
 /*
- * Cached IMU values.  These are:
- * 1) Accelerometer XYZ (in meters/second^2)
- * 2) Gyroscope XYZ (in radians per second)
- * 3) Magnetometer XYZ (in micro teslas)
- * 4) Rotation quaternion
+ * Sensor enum values.  These are (in order)):
+ *
+ * 1) GPS Latitude (degrees)
+ * 2) GPS Longitude (degrees)
+ * 3) GPS Altitude (meters)
+ * 4) Left Wheel Encoder ticks
+ * 5) Right Wheel Encoder ticks
+ * 6-9) IMU Accelerometer (meters/second^2)
+ * 11-13) IMU Gyroscope (radians/second)
+ * 14-16) IMU Magnetometer (teslas)
+ * 17-20) IMU Orientation Vector (quaternion)
  */
-float acc_x_ms2 = 0.0;
-float acc_y_ms2 = 0.0;
-float acc_z_ms2 = 0.0;
+enum SensorValues {
+  GPS_LATITUDE_DEGS = 0,
+  GPS_LONGITUDE_DEGS,
+  GPS_ALTITUDE_M,
+  LEFT_ENCODER_TICKS,
+  RIGHT_ENCODER_TICKS,
+  ACC_X_MS2,
+  ACC_Y_MS2,
+  ACC_Z_MS2,
+  GYR_X_RPS,
+  GYR_Y_RPS,
+  GYR_Z_RPS,
+  MAG_X_T,
+  MAG_Y_T,
+  MAG_Z_T,
+  QUAT_I,
+  QUAT_J,
+  QUAT_K,
+  QUAT_REAL,
+  NUM_SENSOR_VALUES
+};
 
-float gyr_x_rps = 0.0;
-float gyr_y_rps = 0.0;
-float gyr_z_rps = 0.0;
-
-float mag_x_ut = 0.0;
-float mag_y_ut = 0.0;
-float mag_z_ut = 0.0;
-
-float quat_i = 0.0;
-float quat_j = 0.0;
-float quat_k = 0.0;
-float quat_real = 0.0;
+// Sensor values are cached here
+float sensor_values[NUM_SENSOR_VALUES];
 
 void setup() {
   // Wait for a connection to the Raspberry Pi
@@ -162,8 +164,11 @@ void loop() {
     last_gps_time = millis();
 
     // Latitude and longitude need to be divided by 10^7 to get degrees
-    latitude = myGNSS.getLatitude() / 10000000.;
-    longitude = myGNSS.getLongitude() / 10000000.;
+    sensor_values[GPS_LATITUDE_DEGS] = myGNSS.getLatitude() / 10000000.;
+    sensor_values[GPS_LONGITUDE_DEGS] = myGNSS.getLongitude() / 10000000.;
+
+    // Altitude needs to be divided by 1000 to get meters
+    sensor_values[GPS_ALTITUDE_M] = myGNSS.getAltitudeMSL() * 1e-3;
   }
 #endif
 
@@ -172,8 +177,8 @@ void loop() {
    * Update encoder readings.  The library provides 4X counting, which means that
    * each real tick is 4 ticks.
    */
-  left_encoder_ticks = leftEncoder.read() / 4;
-  right_encoder_ticks = rightEncoder.read() / 4;
+  sensor_values[LEFT_ENCODER_TICKS] = leftEncoder.read() / 4;
+  sensor_values[RIGHT_ENCODER_TICKS] = rightEncoder.read() / 4;
 #endif
 
 #if ENABLE_IMU
@@ -192,24 +197,24 @@ void loop() {
 
       if (sensor_event_id == SENSOR_REPORTID_ACCELEROMETER) {
         // Accelerometer data received
-        acc_x_ms2 = myIMU.getAccelX();
-        acc_y_ms2 = myIMU.getAccelY();
-        acc_z_ms2 = myIMU.getAccelZ();
+        sensor_values[ACC_X_MS2] = myIMU.getAccelX();
+        sensor_values[ACC_Y_MS2] = myIMU.getAccelY();
+        sensor_values[ACC_Z_MS2] = myIMU.getAccelZ();
       } else if (sensor_event_id == SENSOR_REPORTID_GYROSCOPE_CALIBRATED) {
         // Gyro data received
-        gyr_x_rps = myIMU.getGyroX();
-        gyr_y_rps = myIMU.getGyroY();
-        gyr_z_rps = myIMU.getGyroZ();
+        sensor_values[GYR_X_RPS] = myIMU.getGyroX();
+        sensor_values[GYR_Y_RPS] = myIMU.getGyroY();
+        sensor_values[GYR_Z_RPS] = myIMU.getGyroZ();
       } else if (sensor_event_id == SENSOR_REPORTID_MAGNETIC_FIELD) {
         // Magnetometer data received
-        mag_x_ut = myIMU.getMagX();
-        mag_y_ut = myIMU.getMagY();
-        mag_z_ut = myIMU.getMagZ();
+        sensor_values[MAG_X_T] = myIMU.getMagX() * 1e-6;
+        sensor_values[MAG_Y_T] = myIMU.getMagY() * 1e-6;
+        sensor_values[MAG_Z_T] = myIMU.getMagZ() * 1e-6;
       } else if (sensor_event_id == SENSOR_REPORTID_ROTATION_VECTOR) {
-        quat_i = myIMU.getQuatI();
-        quat_j = myIMU.getQuatJ();
-        quat_k = myIMU.getQuatK();
-        quat_real = myIMU.getQuatReal();
+        sensor_values[QUAT_I] = myIMU.getQuatI();
+        sensor_values[QUAT_J] = myIMU.getQuatJ();
+        sensor_values[QUAT_K] = myIMU.getQuatK();
+        sensor_values[QUAT_REAL] = myIMU.getQuatReal();
       }
     }
   }
@@ -218,22 +223,22 @@ void loop() {
   /*
    * Publish the sensor data.  To reduce latency this is a single string of the
    * form:
-   * S <GPS latitude> <GPS longitude> <left encoder ticks> <right encoder ticks>
-       <Accel X> <Accel Y> <Accel Z> <Gyro X> <Gyro Y> <Gyro Z> <Mag X> <Mag Y>
-       <Mag Z>\r\n
+   * S <sensor_values array>\r\n
    *
    * To help verify the data sent is accurate, look for the "S" character at the
    * beginning and the \r\n at the end.
    */
-  Serial.println(String("S") + " " + String(latitude) + " " +
-                 String(longitude) + " " + String(left_encoder_ticks) + " " +
-                 String(right_encoder_ticks) + " " + String(acc_x_ms2) + " " +
-                 String(acc_y_ms2) + " " + String(acc_z_ms2) + " " +
-                 String(gyr_x_rps) + " " + String(gyr_y_rps) + " " +
-                 String(gyr_z_rps) + " " + String(mag_x_ut) + " " +
-                 String(mag_y_ut) + " " + String(mag_z_ut) + " " +
-                 String(quat_i) + " " + String(quat_j) + " " +
-                 String(quat_k) + " " + String(quat_real));
+  String temp("S ");
+  for (size_t i = 0; i < NUM_SENSOR_VALUES; ++i) {
+    // Need special cases for the encoder ticks as int32_t values
+    if ((i == LEFT_ENCODER_TICKS) || (i == RIGHT_ENCODER_TICKS)) {
+      temp += String(int32_t(sensor_values[i]));
+    } else {
+      temp += String(sensor_values[i]);
+    }
+    temp += " ";
+  }
+  Serial.println(temp);
 
   // Need a small delay to prevent Arduino thrashing
   delay(20);
