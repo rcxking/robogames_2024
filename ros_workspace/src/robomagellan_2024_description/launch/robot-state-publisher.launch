@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- robot-state-publisher.launch - Launch the robot state publisher with the robot URDF -->
+<launch>
+  <!-- Robot Model -->
+  <arg name="model" default="$(find robomagellan_2024_description)/urdf/robomagellan_2024.urdf.xacro"/>
+
+  <!-- Generate robot description from URDF model -->
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
+
+  <!-- Start the robot state publisher -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen">
+  </node>
+</launch>

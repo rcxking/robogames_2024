@@ -1,4 +1,7 @@
+<?xml version="1.0"?>
+<!-- launch-sim.launch - Launches the Gazebo simulation environment -->
 <launch>
+  <!-- Gazebo Arguments -->
   <arg name="paused" default="false"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="gui" default="true"/>
@@ -6,7 +9,12 @@
   <arg name="debug" default="false"/>
   <arg name="model" default="$(find robomagellan_2024_description)/urdf/robomagellan_2024.urdf.xacro"/>
 
-  <!-- Launch an empty world -->
+  <!-- Include the robot state publisher launch file -->
+  <include file="$(find robomagellan_2024_description)/launch/robot-state-publisher.launch">
+    <arg name="model" value="$(arg model)"/>
+  </include>
+
+  <!-- Spawn an empty world in Gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="debug" value="$(arg debug)"/>
     <arg name="gui" value="$(arg gui)"/>
@@ -15,12 +23,6 @@
     <arg name="headless" value="$(arg headless)"/>
   </include>
 
-  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
-
-  <!-- Push robot_description to factory and spawn robot in gazebo -->
+  <!-- Spawn the robot in Gazebo -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" args="-z 1.0 -unpause -urdf -model robot -param robot_description" respawn="false" output="screen"/>
-
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
-    <param name="publish_frequency" type="double" value="30.0"/>
-  </node>
 </launch>
