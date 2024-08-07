@@ -11,7 +11,7 @@
   <arg name="rvizconfig" default="$(find urdf_tutorial)/rviz/urdf.rviz"/>
 
   <!-- Launch Gazebo and spawn the simulated robot -->
-  <include file="$(find robomagellan_2024_description)/launch/gazebo.launch">
+  <include file="$(find robomagellan_2024_description)/launch/launch-sim.launch">
     <arg name="model" value="$(arg model)"/>
   </include>
 
