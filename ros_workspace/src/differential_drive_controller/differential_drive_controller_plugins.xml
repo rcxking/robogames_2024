@@ -1,0 +1,7 @@
+<library path="libdifferential_drive_controller">
+  <class name="differential_drive_controller/DifferentialDriveController" type="differential_drive_controller::DifferentialDriveController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      Standard differential drive controller that takes in a requested linear and angular velocity and determines the appropriate velocities to send to each side.  This controller requires 2 hardware interfaces of type VelocityJointInterface (one for each side).
+    </description>
+  </class>
+</library>
