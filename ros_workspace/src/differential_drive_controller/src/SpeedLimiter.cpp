@@ -47,4 +47,12 @@ namespace differential_drive_controller {
 
     return tmp != 0.0 ? v / tmp : 1.0;
   }
+
+  double SpeedLimiter::limit_velocity(double &v) {
+    const double tmp = v;
+    if (has_velocity_limits) {
+      v = clamp(v, min_velocity, max_velocity);
+    }
+    return tmp != 0.0 ? v / tmp : 1.0;
+  }
 } // End namespace differential_drive_controller
