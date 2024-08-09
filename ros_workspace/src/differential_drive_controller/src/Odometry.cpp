@@ -87,4 +87,9 @@ namespace differential_drive_controller {
     left_wheel_radius_ = left_wheel_radius;
     right_wheel_radius_ = right_wheel_radius;
   }
+
+  void Odometry::setVelocityRollingWindowSize(const size_t velocity_rolling_window_size) {
+    velocity_rolling_window_size_ = velocity_rolling_window_size;
+    resetAccumulators();
+  }
 } // End namespace differential_drive_controller
