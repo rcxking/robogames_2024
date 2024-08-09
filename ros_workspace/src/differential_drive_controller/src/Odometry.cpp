@@ -31,4 +31,43 @@ namespace differential_drive_controller {
     resetAccumulators();
     timestamp_ = time;
   }
+
+  bool Odometry::update(const double left_pos, const double right_pos,
+                        const ros::Time &time) {
+    // Get current wheel joint positions
+    const double left_wheel_cur_pos = left_pos * left_wheel_radius_;
+    const double right_wheel_cur_pos = right_pos * right_wheel_radius_;
+
+    // Estimate velocity of wheels using current and old positions
+    const double left_wheel_est_vel = left_wheel_cur_pos - left_wheel_old_pos_;
+    const double right_wheel_est_vel = right_wheel_cur_pos - right_wheel_old_pos_;
+
+    // Update old position with current position
+    left_wheel_old_pos_ = left_wheel_cur_pos;
+    right_wheel_old_pos_ = right_wheel_cur_pos;
+
+    // Compute linear/angular velocity differences
+    const double linear = (right_wheel_est_vel + left_wheel_est_vel) * 0.5;
+    const double angular = (right_wheel_est_vel - left_wheel_est_vel) / wheel_separation_;
+
+    // Integrate odometry
+    integrate_fun_(linear, angular);
+
+    // Cannot estimate speed with extremely small time intervals
+    const double dt = (time - timestamp_).toSec();
+    if (dt < 0.0001) {
+      return false;
+    }
+
+    timestamp_ = time;
+
+    // Estimate speeds using a rolling mean filter
+    linear_acc_(linear/dt);
+    angular_acc_(angular/dt);
+
+    linear_ = bacc::rolling_mean(linear_acc_);
+    angular_ = bacc::rolling_mean(angular_acc_);
+
+    return true;
+  }
 } // End namespace differential_drive_controller
