@@ -70,4 +70,15 @@ namespace differential_drive_controller {
 
     return true;
   }
+
+  void Odometry::updateOpenLoop(const double linear, const double angular, const ros::Time &time) {
+    // Save last linear/angular velocities
+    linear_ = linear;
+    angular_ = angular;
+
+    // Integrate odometry
+    const double dt = (time - timestamp_).toSec();
+    timestamp_ = time;
+    integrate_fun_(linear * dt, angular * dt);
+  }
 } // End namespace differential_drive_controller
