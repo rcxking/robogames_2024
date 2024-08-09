@@ -107,4 +107,19 @@ namespace differential_drive_controller {
     y_ += linear * sin(direction);
     heading_ += angular;
   }
+
+  void Odometry::integrateExact(const double linear, const double angular) {
+    // Have to use Runge-Kutta 2nd order integration method if angular too small
+    if (fabs(angular) < 1e-6) {
+      integrateRungeKutta2(linear, angular);
+    } else {
+      // Perform exact integration
+      const double heading_old = heading_;
+      // Turning radius
+      const double r = linear/angular;
+      heading_ += angular;
+      x_       +=  r * (sin(heading_) - sin(heading_old));
+      y_       += -r * (cos(heading_) - cos(heading_old));
+    }
+  }
 } // End namespace differential_drive_controller
