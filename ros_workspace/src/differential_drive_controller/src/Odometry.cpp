@@ -92,4 +92,19 @@ namespace differential_drive_controller {
     velocity_rolling_window_size_ = velocity_rolling_window_size;
     resetAccumulators();
   }
+
+  void Odometry::integrateRungeKutta2(const double linear, const double angular) {
+    /*
+     * The Runge-Kutta 2nd order integration method uses the current value of a
+     * function and the weighted average of two increments:
+     * 1) Increment based on slope at the beginning of the interval
+     * 2) Increment based on slope at the midpoint of the interval
+     *
+     * to estimate the next value of the function.
+     */
+    const double direction = heading_ + angular * 0.5;
+    x_ += linear * cos(direction);
+    y_ += linear * sin(direction);
+    heading_ += angular;
+  }
 } // End namespace differential_drive_controller
