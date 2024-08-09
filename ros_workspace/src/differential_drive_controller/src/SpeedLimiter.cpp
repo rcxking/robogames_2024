@@ -37,4 +37,14 @@ namespace differential_drive_controller {
       max_acceleration(max_acceleration),
       min_jerk(min_jerk),
       max_jerk(max_jerk) {}
+
+  double SpeedLimiter::limit(double &v, const double v0, const double v1, const double dt) {
+    const double tmp = v;
+
+    limit_jerk(v, v0, v1, dt);
+    limit_acceleration(v, v0, dt);
+    limit_velocity(v);
+
+    return tmp != 0.0 ? v / tmp : 1.0;
+  }
 } // End namespace differential_drive_controller
