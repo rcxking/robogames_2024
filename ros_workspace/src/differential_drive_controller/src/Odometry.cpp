@@ -81,4 +81,10 @@ namespace differential_drive_controller {
     timestamp_ = time;
     integrate_fun_(linear * dt, angular * dt);
   }
+
+  void Odometry::setWheelParams(const double wheel_separation, const double left_wheel_radius, const double right_wheel_radius) {
+    wheel_separation_ = wheel_separation;
+    left_wheel_radius_ = left_wheel_radius;
+    right_wheel_radius_ = right_wheel_radius;
+  }
 } // End namespace differential_drive_controller
