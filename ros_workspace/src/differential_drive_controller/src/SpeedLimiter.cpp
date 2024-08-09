@@ -70,4 +70,22 @@ namespace differential_drive_controller {
 
     return tmp != 0.0 ? v / tmp : 1.0;
   }
+
+  double SpeedLimiter::limit_jerk(double &v, const double v0, const double v1, const double dt) {
+    const double tmp = v;
+    if (has_jerk_limits) {
+      const double dv = v - v0;
+      const double dv0 = v0 - v1;
+
+      const double dt2 = 2. * dt * dt;
+
+      const double da_min = min_jerk * dt2;
+      const double da_max = max_jerk * dt2;
+
+      const double da = clamp(dv - dv0, da_min, da_max);
+
+      v = v0 + dv0 + da;
+    }
+    return tmp != 0.0 ? v / tmp : 1.0;
+  }
 } // End namespace differential_drive_controller
