@@ -25,4 +25,10 @@ namespace differential_drive_controller {
       angular_acc_(RollingWindow::window_size = velocity_rolling_window_size),
       integrate_fun_(std::bind(&Odometry::integrateExact, this,
             std::placeholders::_1, std::placeholders::_2)) {}
+
+  void Odometry::init(const ros::Time &time) {
+    // Reset accumulators and current timestamp
+    resetAccumulators();
+    timestamp_ = time;
+  }
 } // End namespace differential_drive_controller
