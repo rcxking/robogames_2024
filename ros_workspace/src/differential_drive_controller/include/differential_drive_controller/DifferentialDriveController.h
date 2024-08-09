@@ -16,6 +16,7 @@
 #include <nav_msgs/Odometry.h>
 #include <realtime_tools/realtime_buffer.h>
 #include <realtime_tools/realtime_publisher.h>
+#include <string>
 #include <tf/tfMessage.h>
 
 namespace differential_drive_controller {
@@ -99,6 +100,45 @@ class DifferentialDriveController
     // Odometry publishers
     std::shared_ptr<realtime_tools::RealtimePublisher<nav_msgs::Odometry>> odom_pub_;
     std::shared_ptr<realtime_tools::RealtimePublisher<tf::tfMessage>> tf_odom_pub_;
+    //Odometry odometry_;
+
+    // Controller state publisher
+    std::shared_ptr<realtime_tools::RealtimePublisher<control_msgs::JointTrajectoryControllerState>> controller_state_pub_;
+
+    // Wheel separation (distance between wheel midpoints) in meters
+    double wheel_separation_;
+
+    // Wheel radius (meters)
+    double wheel_radius_;
+
+    // Timeout to consider cmd_vel commands old (seconds)
+    double cmd_vel_timeout_;
+
+    // Whether to allow multiple publishers on cmd_vel topic or not
+    bool allow_multiple_cmd_vel_publisher_;
+
+    // Robot base TF frame
+    std::string base_frame_id_;
+
+    // Odom TF frame
+    std::string odom_frame_id_;
+
+    // Number of wheel joints
+    size_t wheel_joints_size_;
+
+    // Speed limiters
+    //Commands
+
+    /*
+     * Sets all wheel velocities to 0.
+     */
+    void brake();
+
+    /*
+     * Velocity command callback.
+     * command: Velocity command message
+     */
+    void CmdVelCallback(const geometry_msgs::Twist &command);
 }; // End class DifferentialDriveController
 } // End namespace differential_drive_controller
 
