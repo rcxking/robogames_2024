@@ -58,6 +58,7 @@ include_directories(
 # Differential Drive controller plugin
 add_library(${PROJECT_NAME}
   src/DifferentialDriveController.cpp
+  src/Odometry.cpp
 )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
