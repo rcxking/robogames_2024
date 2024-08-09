@@ -55,4 +55,19 @@ namespace differential_drive_controller {
     }
     return tmp != 0.0 ? v / tmp : 1.0;
   }
+
+  double SpeedLimiter::limit_acceleration(double &v, const double v0, const double dt) {
+    const double tmp = v;
+    if (has_acceleration_limits) {
+      // Compute acceleration changes within this timestep
+      const double dv_min = min_acceleration * dt;
+      const double dv_max = max_acceleration * dt;
+
+      const double dv = clamp(v - v0, dv_min, dv_max);
+
+      v = v0 + dv;
+    }
+
+    return tmp != 0.0 ? v / tmp : 1.0;
+  }
 } // End namespace differential_drive_controller

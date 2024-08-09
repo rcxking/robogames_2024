@@ -9,6 +9,7 @@
 #include <control_msgs/JointTrajectoryControllerState.h>
 #include <controller_interface/controller.h>
 #include <differential_drive_controller/DifferentialDriveControllerConfig.h>
+#include <differential_drive_controller/Odometry.h>
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <hardware_interface/joint_command_interface.h>
@@ -100,7 +101,7 @@ class DifferentialDriveController
     // Odometry publishers
     std::shared_ptr<realtime_tools::RealtimePublisher<nav_msgs::Odometry>> odom_pub_;
     std::shared_ptr<realtime_tools::RealtimePublisher<tf::tfMessage>> tf_odom_pub_;
-    //Odometry odometry_;
+    Odometry odometry_;
 
     // Controller state publisher
     std::shared_ptr<realtime_tools::RealtimePublisher<control_msgs::JointTrajectoryControllerState>> controller_state_pub_;
