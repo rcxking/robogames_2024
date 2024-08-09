@@ -122,4 +122,9 @@ namespace differential_drive_controller {
       y_       += -r * (cos(heading_) - cos(heading_old));
     }
   }
+
+  void Odometry::resetAccumulators() {
+    linear_acc_ = RollingMeanAcc(RollingWindow::window_size = velocity_rolling_window_size_);
+    angular_acc_ = RollingMeanAcc(RollingWindow::window_size = velocity_rolling_window_size_);
+  }
 } // End namespace differential_drive_controller
