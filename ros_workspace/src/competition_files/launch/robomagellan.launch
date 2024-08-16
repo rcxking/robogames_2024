@@ -1,10 +1,12 @@
+<?xml version="1.0"?>
 <!-- robomagellan.launch - Actual launch file for RoboMagellan -->
 <launch>
   <!-- High-level flags to enable/disable individual components -->
-  <arg name="enable_ac" default="true"/>
-  <arg name="enable_odometry" default="true"/>
-  <arg name="enable_diff_drive" default="true"/>
-  <arg name="enable_runner" default="true"/>
+  <arg name="enable_ac" default="false"/>
+  <arg name="enable_odometry" default="false"/>
+  <arg name="enable_diff_drive" default="false"/>
+  <arg name="enable_ros_control" default="true"/>
+  <arg name="enable_runner" default="false"/>
 
   <!-- Flags to enable/disable sensors -->
   <arg name="enable_imu" default="true"/>
@@ -22,6 +24,16 @@
   <!-- Main Runner node constants -->
   <arg name="filepath" default="/home/ubuntu/robogames_2024/mission.txt"/>
   <arg name="use_sim" default="false"/>
+
+  <!-- Load robot's URDF -->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find robomagellan_2024_description)/urdf/robomagellan_2024.urdf.xacro'"/>
+
+  <!-- Start ROS Controls -->
+  <group if="$(arg enable_ros_control)">
+    <!-- Load hardware interface -->
+    <node name="diff_drive_interface" pkg="diff_drive_interface" type="DiffDriveInterface"
+          output="screen"/>
+  </group>
 
   <!-- Arduino Connector -->
   <group if="$(arg enable_ac)">
