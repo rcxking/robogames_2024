@@ -18,10 +18,14 @@ def generate_launch_description():
     )
 
     # Include Gazebo launch file from package gazebo_ros
+    gazebo_params_file = os.path.join(get_package_share_directory(package_name),
+            'config', 'gazebo_params.yaml')
     gazebo = IncludeLaunchDescription(
             PythonLaunchDescriptionSource([os.path.join(
                 get_package_share_directory('gazebo_ros'), 'launch',
-                'gazebo.launch.py')])
+                'gazebo.launch.py')]),
+            launch_arguments={'extra_gazebo_args': '--ros-args --params-file ' +
+                gazebo_params_file}.items()
     )
 
     # Spawn an instance of the simulated robot
