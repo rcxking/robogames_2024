@@ -2,8 +2,8 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
   <xacro:arg name="sim_mode" default="false"/>
 
-  <!-- Gazebo Diff Drive Control Plugin -->
-  <xacro:include filename="gazebo_control.xacro"/>
+  <!-- ROS 2 Control Controller -->
+  <xacro:include filename="ros2_control.xacro"/>
 
   <xacro:include filename="robomagellan_core.urdf.xacro"/>
 </robot>
