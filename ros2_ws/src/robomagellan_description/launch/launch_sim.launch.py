@@ -29,8 +29,24 @@ def generate_launch_description():
             arguments=['-topic', 'robot_description', '-entity', 'robot'],
             output='screen')
 
+    # ROS 2 Controls - Differential Drive Controller
+    diff_drive_spawner = Node(
+            package='controller_manager',
+            executable='spawner',
+            arguments=['diff_cont']
+    )
+
+    # ROS 2 Controls - Joint State Broadcaster
+    joint_broad_spawner = Node(
+            package='controller_manager',
+            executable='spawner',
+            arguments=['joint_broad']
+    )
+
     return LaunchDescription([
         rv,
         gazebo,
-        spawn_entity
+        spawn_entity,
+        diff_drive_spawner,
+        joint_broad_spawner
     ])
