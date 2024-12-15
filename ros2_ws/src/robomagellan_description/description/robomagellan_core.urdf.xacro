@@ -55,7 +55,7 @@
   <xacro:property name="wheel_x_offset" value="0.28575"/>
   <xacro:property name="wheel_y_offset" value="0.2447925"/>
 
-  <xacro:property name="robot_mass" value="22.679"/>
+  <xacro:property name="robot_mass" value="1.0"/>
 
   <!-- Macro to create the side bars -->
   <xacro:macro name="sidebar" params="prefix reflect">
@@ -116,6 +116,33 @@
     </joint>
   </xacro:macro>
 
+  <xacro:macro name="mimic_wheel" params="prefix suffix reflectx reflecty">
+    <link name="${prefix}_${suffix}_wheel">
+      <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_width}" radius="${wheel_radius}"/>
+      <visual>
+        <geometry>
+          <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+        </geometry>
+       <material name="black"/>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Joint connecting this wheel to the base_link -->
+    <joint name="${prefix}_${suffix}_joint" type="continuous">
+      <axis xyz="0 0 1" rpy="0 0 0"/>
+      <parent link="base_link"/>
+      <child link="${prefix}_${suffix}_wheel"/>
+      <origin xyz="${reflectx*wheel_x_offset} ${reflecty*wheel_y_offset} 0.0"
+              rpy="${-reflecty*pi/2} 0 0"/>
+      <mimic joint="${prefix}_front_joint" multiplier="1.0" offset="0.0"/>
+    </joint>
+  </xacro:macro>
+
 
   <material name="black">
     <color rgba="0 0 0 1"/>
@@ -167,8 +194,8 @@
 
   <!-- Wheels -->
   <xacro:wheel prefix="left" suffix="front" reflectx="1" reflecty="1"/>
-  <xacro:wheel prefix="left" suffix="rear" reflectx="-1" reflecty="1"/>
+  <xacro:mimic_wheel prefix="left" suffix="rear" reflectx="-1" reflecty="1"/>
 
   <xacro:wheel prefix="right" suffix="front" reflectx="1" reflecty="-1"/>
-  <xacro:wheel prefix="right" suffix="rear" reflectx="-1" reflecty="-1"/>
+  <xacro:mimic_wheel prefix="right" suffix="rear" reflectx="-1" reflecty="-1"/>
 </robot>
