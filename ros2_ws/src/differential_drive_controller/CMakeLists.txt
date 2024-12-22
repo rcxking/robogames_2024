@@ -8,14 +8,30 @@ endif()
 # Dependencies
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   controller_interface
+  generate_parameter_library
+  geometry_msgs
+  hardware_interface
+  nav_msgs
+  pluginlib
   rclcpp
+  rclcpp_lifecycle
+  rcpputils
+  realtime_tools
+  tf2
+  tf2_msgs
 )
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(backward_ros REQUIRED)
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
+
+# Generate ROS params from YAML config
+generate_parameter_library(differential_drive_controller_parameters
+  src/differential_drive_controller_parameter.yaml
+)
 
 # Differential Drive Controller plugin
 add_library(differential_drive_controller SHARED
@@ -26,8 +42,14 @@ target_include_directories(differential_drive_controller PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/differential_drive_controller>
 )
+target_link_libraries(differential_drive_controller PUBLIC
+  differential_drive_controller_parameters
+)
 ament_target_dependencies(differential_drive_controller PUBLIC
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
+)
+pluginlib_export_plugin_description_file(controller_interface
+  differential_drive_plugin.xml
 )
 
 if(BUILD_TESTING)
@@ -54,6 +76,7 @@ install(
 install(
   TARGETS
     differential_drive_controller
+    differential_drive_controller_parameters
   EXPORT
     export_differential_drive_controller
   RUNTIME DESTINATION bin
