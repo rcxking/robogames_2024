@@ -8,18 +8,34 @@
 #define __DIFFERENTIAL_DRIVE_CONTROLLER_HPP__
 
 #include "controller_interface/controller_interface.hpp"
+#include "differential_drive_controller_parameters.hpp"
+#include "differential_drive_controller/odometry.hpp"
+#include "differential_drive_controller/speed_limiter.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
 #include "hardware_interface/handle.hpp"
+#include "nav_msgs/msg/odometry.hpp"
+#include "odometry.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/state.hpp"
+#include "realtime_tools/realtime_box.hpp"
+#include "realtime_tools/realtime_publisher.hpp"
+#include "tf2_msgs/msg/tf_message.hpp"
 
+#include <chrono>
+#include <cmath>
 #include <functional> // reference_wrapper
 #include <memory> // shared_ptr
+#include <queue>
 #include <string>
+#include <vector>
 
 namespace differential_drive_controller
 {
 class DifferentialDriveController : public controller_interface::ControllerInterface
 {
+  using Twist = geometry_msgs::msg::TwistStamped;
+
 public:
   //! Default Constructor
   DifferentialDriveController();
@@ -111,7 +127,57 @@ protected:
   // ROS parameters
   std::shared_ptr<ParamListener> param_listener_;
   Params params_;
-private:
+
+  // Tracks robot's odometry
+  Odometry odometry_;
+
+  // Timeout to consider cmd_vel commands old
+  std::chrono::milliseconds cmd_vel_timeout_{500};
+
+  // Odometry publishers
+  std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Odometry>> odometry_publisher_ = nullptr;
+  std::shared_ptr<realtime_tools::RealtimePublisher<nav_msgs::msg::Odometry>>
+    realtime_odometry_publisher_ = nullptr;
+
+  // Odometry TF publishers
+  std::shared_ptr<rclcpp::Publisher<tf2_msgs::msg::TFMessage>> odometry_transform_publisher_ =
+    nullptr;
+  std::shared_ptr<realtime_tools::RealtimePublisher<tf2_msgs::msg::TFMessage>>
+    realtime_odometry_transform_publisher_ = nullptr;
+
+  // Commanded Velocity subscribers
+  bool subscriber_is_active_ = false;
+  rclcpp::Subscription<Twist>::SharedPtr velocity_command_subscriber_ = nullptr;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr
+    velocity_command_unstamped_subscriber_ = nullptr;
+
+  realtime_tools::RealtimeBox<std::shared_ptr<Twist>> received_velocity_msg_ptr_{nullptr};
+
+  // Last 2 received velocity commands
+  std::queue<Twist> previous_commands_;
+
+  // Linear/angular velocity limiters
+  SpeedLimiter limiter_linear_, limiter_angular_;
+
+  // Restricted velocity command publishers
+  bool publish_limited_velocity_ = false;
+  std::shared_ptr<rclcpp::Publisher<Twist>> limited_velocity_publisher_ = nullptr;
+  std::shared_ptr<realtime_tools::RealtimePublisher<Twist>> realtime_limited_velocity_publisher_ =
+    nullptr;
+
+  // Previous time the controller was updated
+  rclcpp::Time previous_update_timestamp_{0};
+
+  // Publish rate limiter
+  double publish_rate_ = 50.0;
+  rclcpp::Duration publish_period_ = rclcpp::Duration::from_nanoseconds(0);
+  rclcpp::Time previous_publish_timestamp_{0, 0, RCL_CLOCK_UNINITIALIZED};
+
+  bool is_halted = false;
+  bool use_stamped_vel_ = true;
+
+  bool reset();
+  void halt();
 
 }; // End class DifferentialDriveController
 } // End namespace differential_drive_controller
