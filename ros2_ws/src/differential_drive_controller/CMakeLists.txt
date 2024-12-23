@@ -36,6 +36,8 @@ generate_parameter_library(differential_drive_controller_parameters
 # Differential Drive Controller plugin
 add_library(differential_drive_controller SHARED
   src/differential_drive_controller.cpp
+  src/odometry.cpp
+  src/speed_limiter.cpp
 )
 target_compile_features(differential_drive_controller PUBLIC cxx_std_17)
 target_include_directories(differential_drive_controller PUBLIC

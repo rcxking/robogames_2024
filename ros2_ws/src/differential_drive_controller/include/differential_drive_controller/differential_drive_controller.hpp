@@ -8,8 +8,13 @@
 #define __DIFFERENTIAL_DRIVE_CONTROLLER_HPP__
 
 #include "controller_interface/controller_interface.hpp"
+#include "hardware_interface/handle.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/state.hpp"
+
+#include <functional> // reference_wrapper
+#include <memory> // shared_ptr
+#include <string>
 
 namespace differential_drive_controller
 {
@@ -78,6 +83,34 @@ public:
   controller_interface::CallbackReturn on_shutdown(
       const rclcpp_lifecycle::State &previous_state) override;
 
+protected:
+  /*
+   * Each wheel can be controlled by sending an angular velocity (rad/s) and
+   * provides feedback via its encoder.
+   */
+  struct WheelHandle {
+    std::reference_wrapper<const hardware_interface::LoanedStateInterface> feedback;
+    std::reference_wrapper<hardware_interface::LoanedCommandInterface> velocity;
+  };
+
+  const char *feedback_type() const;
+
+  /**
+   * @brief Creates a wheel for the given side and name.
+   */
+  controller_interface::CallbackReturn configure_side(
+      const std::string &side, const std::string &wheel_name,
+      WheelHandle &registered_handle);
+
+  /*
+   * Wheel handles for the left/right sides.  Each side's wheels are connected
+   * with a belt drive so we only need to track 1 joint per side.
+   */
+  WheelHandle registered_left_wheel_handle_, registered_right_wheel_handle_;
+
+  // ROS parameters
+  std::shared_ptr<ParamListener> param_listener_;
+  Params params_;
 private:
 
 }; // End class DifferentialDriveController
