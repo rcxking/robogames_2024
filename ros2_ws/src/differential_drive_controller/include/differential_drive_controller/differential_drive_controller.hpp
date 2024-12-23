@@ -122,7 +122,7 @@ protected:
    * Wheel handles for the left/right sides.  Each side's wheels are connected
    * with a belt drive so we only need to track 1 joint per side.
    */
-  WheelHandle registered_left_wheel_handle_, registered_right_wheel_handle_;
+  std::vector<WheelHandle> registered_left_wheel_handles_, registered_right_wheel_handles_;
 
   // ROS parameters
   std::shared_ptr<ParamListener> param_listener_;
