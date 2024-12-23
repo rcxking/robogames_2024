@@ -45,6 +45,14 @@ InterfaceConfiguration DifferentialDriveController::command_interface_configurat
   return {interface_configuration_type::INDIVIDUAL, conf_names};
 }
 
+// Create state interfaces (feedback received)
+InterfaceConfiguration DifferentialDriveController::state_interface_configuration() const {
+  std::vector<std::string> conf_names;
+  conf_names.push_back(params_.left_joint_name + "/" + feedback_type());
+  conf_names.push_back(params_.right_joint_name + "/" + feedback_type());
+  return {interface_configuration_type::INDIVIDUAL, conf_names};
+}
+
 
 // Called when controller is initialized
 controller_interface::CallbackReturn DifferentialDriveController::on_init() {
