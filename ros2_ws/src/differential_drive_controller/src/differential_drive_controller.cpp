@@ -37,6 +37,15 @@ using lifecycle_msgs::msg::State;
 // Default Constructor
 DifferentialDriveController::DifferentialDriveController() : controller_interface::ControllerInterface() {}
 
+// Create command interfaces (what can be controlled)
+InterfaceConfiguration DifferentialDriveController::command_interface_configuration() const {
+  std::vector<std::string> conf_names;
+  conf_names.push_back(params_.left_joint_name + "/" + HW_IF_VELOCITY);
+  conf_names.push_back(params_.right_joint_name + "/" + HW_IF_VELOCITY);
+  return {interface_configuration_type::INDIVIDUAL, conf_names};
+}
+
+
 // Called when controller is initialized
 controller_interface::CallbackReturn DifferentialDriveController::on_init() {
   try {
