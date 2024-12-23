@@ -73,6 +73,28 @@ const char * DifferentialDriveController::feedback_type() const {
   return params_.position_feedback ? HW_IF_POSITION : HW_IF_VELOCITY;
 }
 
+// Called when the controller is asked to reset
+bool DifferentialDriveController::reset() {
+  // Reset odometry
+  odometry_.resetOdometry();
+
+  // Erase last commands
+  std::queue<Twist> empty;
+  std::swap(previous_commands_, empty);
+
+  // Deactivate wheels
+  registered_left_wheel_handles_.clear();
+  registered_right_wheel_handles_.clear();
+
+  subscriber_is_active_ = false;
+  velocity_command_subscriber_.reset();
+  velocity_command_unstamped_subscriber_.reset();
+
+  received_velocity_msg_ptr_.set(nullptr);
+  is_halted = false;
+  return true;
+}
+
 // Called when the controller is asked to halt
 void DifferentialDriveController::halt() {
   const auto halt_wheels = [](auto & wheel_handles) {
