@@ -73,4 +73,15 @@ const char * DifferentialDriveController::feedback_type() const {
   return params_.position_feedback ? HW_IF_POSITION : HW_IF_VELOCITY;
 }
 
+// Called when the controller is asked to halt
+void DifferentialDriveController::halt() {
+  const auto halt_wheels = [](auto & wheel_handles) {
+    for (const auto & wheel_handle : wheel_handles) {
+      wheel_handle.velocity.get().set_value(0.0);
+    }
+  };
+
+  halt_wheels(registered_left_wheel_handles_);
+  halt_wheels(registered_right_wheel_handles_);
+}
 } // End namespace differential_drive_controller
