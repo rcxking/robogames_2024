@@ -152,3 +152,10 @@ void DifferentialDriveController::halt() {
   halt_wheels(registered_right_wheel_handles_);
 }
 } // End namespace differential_drive_controller
+
+#include "class_loader/register_macro.hpp"
+
+CLASS_LOADER_REGISTER_CLASS(
+    differential_drive_controller::DifferentialDriveController,
+    controller_interface::ControllerInterface
+)
