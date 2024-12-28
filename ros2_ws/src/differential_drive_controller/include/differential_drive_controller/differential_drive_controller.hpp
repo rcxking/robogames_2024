@@ -115,8 +115,8 @@ protected:
    * @brief Creates a wheel for the given side and name.
    */
   controller_interface::CallbackReturn configure_side(
-      const std::string &side, const std::string &wheel_name,
-      WheelHandle &registered_handle);
+      const std::string &side, const std::vector<std::string> &wheel_names,
+      std::vector<WheelHandle> &registered_handles);
 
   /*
    * Wheel handles for the left/right sides.  Each side's wheels are connected

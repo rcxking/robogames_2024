@@ -73,6 +73,51 @@ const char * DifferentialDriveController::feedback_type() const {
   return params_.position_feedback ? HW_IF_POSITION : HW_IF_VELOCITY;
 }
 
+// Configure a wheel's side
+controller_interface::CallbackReturn DifferentialDriveController::configure_side(
+  const std::string &side, const std::vector<std::string> &wheel_names,
+  std::vector<WheelHandle> & registered_handles) {
+  auto logger = get_node()->get_logger();
+
+  if (wheel_names.empty()) {
+    RCLCPP_ERROR(logger, "No '%s' wheel names specified", side.c_str());
+    return controller_interface::CallbackReturn::ERROR;
+  }
+
+  // register handles
+  registered_handles.reserve(wheel_names.size());
+  for (const auto & wheel_name : wheel_names) {
+    const auto interface_name = feedback_type();
+    const auto state_handle = std::find_if(
+      state_interfaces_.cbegin(), state_interfaces_.cend(),
+      [&wheel_name, &interface_name](const auto & interface) {
+        return interface.get_prefix_name() == wheel_name &&
+               interface.get_interface_name() == interface_name;
+      });
+
+    if (state_handle == state_interfaces_.cend()) {
+      RCLCPP_ERROR(logger, "Unable to obtain joint state handle for %s", wheel_name.c_str());
+      return controller_interface::CallbackReturn::ERROR;
+    }
+
+    const auto command_handle = std::find_if(
+      command_interfaces_.begin(), command_interfaces_.end(),
+      [&wheel_name](const auto & interface) {
+        return interface.get_prefix_name() == wheel_name &&
+               interface.get_interface_name() == HW_IF_VELOCITY;
+      });
+
+    if (command_handle == command_interfaces_.end()) {
+      RCLCPP_ERROR(logger, "Unable to obtain joint command handle for %s", wheel_name.c_str());
+      return controller_interface::CallbackReturn::ERROR;
+    }
+
+    registered_handles.emplace_back(
+      WheelHandle{std::ref(*state_handle), std::ref(*command_handle)});
+  }
+  return controller_interface::CallbackReturn::SUCCESS;
+}
+
 // Called when the controller is asked to reset
 bool DifferentialDriveController::reset() {
   // Reset odometry
