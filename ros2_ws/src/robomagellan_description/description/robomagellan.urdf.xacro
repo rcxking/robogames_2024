@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
-  <xacro:include filename="robomagellan_core.urdf.xacro"/>
-
-  <!-- ROS 2 Control Controller -->
-  <xacro:include filename="ros2_control.xacro"/>
-</robot>
-

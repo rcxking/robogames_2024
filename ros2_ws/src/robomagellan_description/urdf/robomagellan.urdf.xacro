@@ -1,5 +1,15 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Load simulated or real hardware interfaces -->
+  <xacro:arg name="is_sim" default="true"/>
+
+  <!-- Include Gazebo parameters -->
+ <!-- <xacro:include filename="$(find robomagellan_description)/urdf/gazebo.xacro"/> -->
+
+  <!-- Include ros2_contol plugins -->
+ <!-- <xacro:include filename="$(find robomagellan_description)/urdf/ros2_control.xacro"/> -->
+
   <!-- Inertial Macros -->
   <xacro:macro name="inertial_box" params="mass x y z">
     <inertial>
@@ -94,12 +104,14 @@
     <link name="${prefix}_${suffix}_wheel">
       <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_width}" radius="${wheel_radius}"/>
       <visual>
+        <origin xyz="0 0 0" rpy="${-reflecty*pi/2} 0 0"/>
         <geometry>
           <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
         </geometry>
        <material name="black"/>
       </visual>
       <collision>
+        <origin xyz="0 0 0" rpy="${-reflecty*pi/2} 0 0"/>
         <geometry>
           <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
         </geometry>
@@ -108,11 +120,10 @@
 
     <!-- Joint connecting this wheel to the base_link -->
     <joint name="${prefix}_${suffix}_joint" type="continuous">
-      <axis xyz="0 0 1" rpy="0 0 0"/>
+      <origin xyz="${reflectx*wheel_x_offset} ${reflecty*wheel_y_offset} 0" rpy="0 0 0"/>
       <parent link="base_link"/>
       <child link="${prefix}_${suffix}_wheel"/>
-      <origin xyz="${reflectx*wheel_x_offset} ${reflecty*wheel_y_offset} 0.0"
-              rpy="${-reflecty*pi/2} 0 0"/>
+      <axis xyz="0 1 0"/>
     </joint>
   </xacro:macro>
 
@@ -120,12 +131,14 @@
     <link name="${prefix}_${suffix}_wheel">
       <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_width}" radius="${wheel_radius}"/>
       <visual>
+        <origin xyz="0 0 0" rpy="${-reflecty*pi/2} 0 0"/>
         <geometry>
           <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
         </geometry>
        <material name="black"/>
       </visual>
       <collision>
+        <origin xyz="0 0 0" rpy="${-reflecty*pi/2} 0 0"/>
         <geometry>
           <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
         </geometry>
@@ -134,11 +147,10 @@
 
     <!-- Joint connecting this wheel to the base_link -->
     <joint name="${prefix}_${suffix}_joint" type="continuous">
-      <axis xyz="0 0 1" rpy="0 0 0"/>
+      <origin xyz="${reflectx*wheel_x_offset} ${reflecty*wheel_y_offset} 0" rpy="0 0 0"/>
       <parent link="base_link"/>
       <child link="${prefix}_${suffix}_wheel"/>
-      <origin xyz="${reflectx*wheel_x_offset} ${reflecty*wheel_y_offset} 0.0"
-              rpy="${-reflecty*pi/2} 0 0"/>
+      <axis xyz="0 1 0"/>
       <mimic joint="${prefix}_front_joint" multiplier="1.0" offset="0.0"/>
     </joint>
   </xacro:macro>
@@ -148,21 +160,11 @@
     <color rgba="0 0 0 1"/>
   </material>
 
-  <!-- Base Link -->
-  <link name="base_link"/>
-
-  <!-- Base Footprint Link -->
+  <!-- Base Footprint Link.  This is the 2D ground projection of base_link -->
   <link name="base_footprint"/>
 
-  <!-- Attach Base Link to Base Footprint -->
-  <joint name="base_footprint_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="base_footprint"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </joint>
-
-  <!-- Chassis represented by a 50 lbs cuboid (max weight limit) -->
-  <link name="chassis">
+  <!-- Base link represented by a 50 lbs cuboid (max weight limit) -->
+  <link name="base_link">
     <!-- Left/Right sidebars -->
     <xacro:sidebar prefix="left" reflect="1"/>
     <xacro:sidebar prefix="right" reflect="-1"/>
@@ -186,10 +188,12 @@
     <xacro:inertial_box mass="${robot_mass}" x="${sidebar_length+2*frontbar_width}" y="${frontbar_length}" z="${sidebar_height}"/>
   </link>
 
-  <!-- Attach chassis to Base Link -->
-  <joint name="chassis_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="chassis"/>
+  <!-- Attach base_link to base_footprint -->
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <!-- base_link is center of the chassis, so need to shift +Z by wheel radius -->
+    <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
   </joint>
 
   <!-- Wheels -->
