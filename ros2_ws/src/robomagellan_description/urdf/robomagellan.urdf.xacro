@@ -5,10 +5,10 @@
   <xacro:arg name="is_sim" default="true"/>
 
   <!-- Include Gazebo parameters -->
- <!-- <xacro:include filename="$(find robomagellan_description)/urdf/gazebo.xacro"/> -->
+  <xacro:include filename="$(find robomagellan_description)/urdf/gazebo.xacro"/>
 
-  <!-- Include ros2_contol plugins -->
- <!-- <xacro:include filename="$(find robomagellan_description)/urdf/ros2_control.xacro"/> -->
+  <!-- Include ros2_contol plugins/interfaces -->
+  <xacro:include filename="$(find robomagellan_description)/urdf/ros2_control.xacro"/>
 
   <!-- Inertial Macros -->
   <xacro:macro name="inertial_box" params="mass x y z">

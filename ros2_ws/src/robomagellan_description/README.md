@@ -21,6 +21,8 @@ The following is a list of the Python launch files and their purpose:
 2. `gazebo.launch.py`: Starts the Gazebo simulation and spawns the robot.
 
 ## Changelog
+`0.3.0` - Adding `ros2_control` and `gazebo` plugins to URDFs.
+
 `0.2.0` - Updating `robomagellan.urdf.xacro` to remove the `chassis` link,
 correct the `base_link` -> `base_footprint` transform, and fixed the wheels'
 frame orientations.  Added `display.launch.py` and `gazebo.launch.py` to work
