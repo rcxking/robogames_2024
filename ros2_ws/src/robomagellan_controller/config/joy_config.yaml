@@ -1,0 +1,26 @@
+# joy_config.yaml
+#
+# Parameters for the joy node that reads joystick values from the specified
+# joystick and publishes them to the /joy topic.  Refer to
+# https://docs.ros.org/en/jazzy/p/joy/ for additional parameter information.
+joystick:
+  ros__parameters:
+    # The joystick ID can be seen by running
+    # "ros2 run joy joy_enumerate_devices"
+    device_id: 0
+
+    # Name of the joystick.  Needed if multiple joysticks are connected
+    device_name: ""
+
+    # Device deadzone is the percentage of the joystick that needs to be moved
+    # to be considered off-center.
+    deadzone: 0.5
+
+    # Rate (Hz) that the joystick will continue sending the same readings
+    autorepeat_rate: 20.0
+
+    # If true, button releases do nothing
+    sticky_buttons: false
+
+    # Time (ms) to wait after an axis event before publishing a message
+    coalesce_interval_ms: 1
