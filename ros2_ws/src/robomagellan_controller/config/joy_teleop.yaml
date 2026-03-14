@@ -1,0 +1,41 @@
+# joy_teleop.yaml
+#
+# Parameters for the node that subscribes to the /joy topic and maps these
+# joystick inputs to the robot's velocity inputs.
+joy_teleop:
+  ros__parameters:
+    move:
+      # The differential drive controller receives desired input velocities
+      # (linear x + angular z) on the /robomagellan_controller/cmd_vel topic of
+      # type geometry_msgs/msg/TwistStamped
+
+      # Type of ROS interface to use (topic/service/action)
+      type: topic
+
+      # The type of the specified interface
+      interface_type: geometry_msgs/msg/TwistStamped
+
+      # Name of the input interface (either topic_name/service_name/action_name)
+      topic_name: robomagellan_controller/cmd_vel
+
+      # List of buttons to be held down for the command to be active.  This is
+      # not optional, so for the XBOX controller button B is button 1
+      # (0-indexed)
+      deadman_buttons: [1]
+
+      # Joystick axis mappings to the TwistStamped message.  We only need a
+      # forward input for the linear x velocity and an angular input for the
+      # angular z velocity.
+      #
+      # For the XBOX controller inspection of the /joy topic shows that for the
+      # left joystick forward/backwards is axis 1 (0-indexed) and left/right is
+      # axis 0 (0-indexed)
+      axis_mappings:
+        twist-linear-x:
+          axis: 1
+          scale: 1.0
+          offset: 0.0
+        twist-angular-z:
+          axis: 0
+          scale: 8.0
+          offset: 0.0

@@ -13,4 +13,6 @@ determined change them here.
 `controller_manager`.
 
 ## Changelog
+`0.2.0` - `joy`/`joy_teleop` nodes and configs to connect to an Xbox controller
+
 `0.1.0` - Initial package
