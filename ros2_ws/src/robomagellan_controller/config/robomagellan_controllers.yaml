@@ -1,0 +1,88 @@
+# robomagellan_controllers.yaml
+#
+# ros2_control parameters for the differential drive controller
+
+# List of the controllers to use
+controller_manager:
+  ros__parameters:
+    # Rate at which controllers are run (Hz)
+    update_rate: 100
+
+    # Using stock differential drive controller
+    robomagellan_controller:
+      type: diff_drive_controller/DiffDriveController
+
+    # Reads the controller's state interfaces and broadcasts them on
+    # /joint_states
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+# Differential drive controller config params
+robomagellan_controller:
+  ros__parameters:
+    # Stock differential drive controller; no need to write one up
+    type: diff_drive_controller/DiffDriveController
+
+    # Use timestamped velocity
+    use_stamped_vel: true
+
+    # Names of the left/right wheel joints.  The rear wheels are connected by
+    # belts; in the URDF the rear wheels mimic the front wheels.
+    left_wheel_names: ['left_front_joint']
+    right_wheel_names: ['right_front_joint']
+
+    # Odometry publish rate (Hz)
+    publish_rate: 50.0
+
+    # Covariances.  Only care about (x, y, yaw)
+    pose_covariance_diagonal: [0.001, 0.001, 1.0e-3, 1.0e-3, 1.0e-3, 0.01]
+    twist_covariance_diagonal: [0.001, 0.001, 1.0e-3, 1.0e-3, 1.0e-3, 0.01]
+
+    # Distance between the left and right wheels (m).  22.5 inches = 0.5715 m
+    wheel_separation: 0.5715
+
+    # Wheel radius (m)
+    wheel_radius: 0.0762
+
+    # Multipliers.  Not used so keep them at 1.0
+    wheel_separation_multiplier: 1.0
+    left_wheel_radius_multiplier: 1.0
+    right_wheel_radius_multiplier: 1.0
+
+    # Time (s) to wait for velocity commands before zeroing velocities
+    cmd_vel_timeout: 0.5
+
+    # Base frame id.  Use base_footprint since this is a planar robot
+    base_frame_id: base_footprint
+
+    # Publish limited velocity
+    publish_limited_velocity: true
+
+    # Publish wheel data
+    publish_wheel_data: true
+
+    # Publish TF transforms
+    enable_odom_tf: true
+
+    # Velocity/acceleration limits.  If a minimum limit is NOT specified
+    # default to -(maximum limit).  Linear velocity limits are in m/s;
+    # linear acceleration limits are in m/s^2.  Angular velocity limits are
+    # in rad/s; angular acceleration limits are in rad/s^2.
+    linear:
+      x:
+        has_velocity_limits: true
+        max_velocity: 0.7
+        min_velocity: -0.7
+        has_acceleration_limits: true
+        max_acceleration: 0.7
+        min_acceleration: -0.7
+        has_jerk_limits: false
+    angular:
+      z:
+        has_velocity_limits: true
+        max_velocity: 8.5
+        min_velocity: -8.5
+        has_acceleration_limits: true
+        max_acceleration: 5.0
+        min_acceleration: -5.0
+        has_jerk_limits: false
