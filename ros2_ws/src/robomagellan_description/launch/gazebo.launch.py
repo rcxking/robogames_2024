@@ -34,13 +34,20 @@ def generate_launch_description():
                      "use_sim_time": True}]
     )
 
-    # Start Gazebo with an empty world
+    """
+    Start Gazebo with an empty world.
+
+    Per https://github.com/ros-controls/gz_ros2_control/issues/340 for mimic
+    joints to work (used to tie the rear wheels with their respective side's
+    front wheels) we need to change the physics engine from DART to Bullet.
+    """
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory("ros_gz_sim"), "launch"),
             "/gz_sim.launch.py"]),
             launch_arguments=[
-                ("gz_args", [" -v 4", " -r", " empty.sdf"])
+                ("gz_args", [" -v 4", " -r", " empty.sdf", " --physics-engine",
+                             " gz-physics-bullet-featherstone-plugin"])
             ]
     )
 
