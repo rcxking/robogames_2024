@@ -21,6 +21,9 @@ The following is a list of the Python launch files and their purpose:
 2. `gazebo.launch.py`: Starts the Gazebo simulation and spawns the robot.
 
 ## Changelog
+`0.5.0` - Changing Gazebo's physics engine from Dart -> Bullet for mimic joints
+to work.
+
 `0.4.0` - Adding `sim.rviz`.
 
 `0.3.0` - Adding `ros2_control` and `gazebo` plugins to URDFs.
