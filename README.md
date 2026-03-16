@@ -1,5 +1,8 @@
 # robogames_2024
 
+![Robot_Top](./images/Robot_Top.jpeg)
+![Robot_Front](./images/Robot_Front.jpeg)
+
 This repository contains the code used for a RoboMagellan outdoor navigation
 robotics competition.
 
