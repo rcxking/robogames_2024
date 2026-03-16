@@ -6,6 +6,7 @@ Starts Gazebo and spawns the simulated robot.
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
+from launch_ros.actions import Node
 
 import os
 
@@ -40,8 +41,20 @@ def generate_launch_description():
         }.items()
     )
 
+    # Spawn Rviz2
+    rviz = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="screen",
+        arguments=["-d", os.path.join(
+            get_package_share_directory("robomagellan_description"),
+            "rviz", "sim.rviz")]
+    )
+
     return LaunchDescription([
         gazebo,
         controller,
-        joystick
+        joystick,
+        rviz
     ])
