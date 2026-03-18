@@ -21,6 +21,9 @@ The following is a list of the Python launch files and their purpose:
 2. `gazebo.launch.py`: Starts the Gazebo simulation and spawns the robot.
 
 ## Changelog
+`0.7.0` - `robomagellan.urdf.xacro` has removed the `mimic_wheel` macro and
+condensed it with the `wheel` macro and an `xacro:if`.
+
 `0.6.0` - `robomagellan.urdf.xacro` has corrected wheel inertial matrices and
 wheel collision layers are now spherical rather than cylindrical.
 
