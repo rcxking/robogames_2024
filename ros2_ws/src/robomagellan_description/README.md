@@ -20,7 +20,15 @@ The following is a list of the Python launch files and their purpose:
 
 2. `gazebo.launch.py`: Starts the Gazebo simulation and spawns the robot.
 
+## World Files
+
+1. `robomagellan_world.sdf` is the world used to simulate a Robomagellan
+   competition environment.
+
 ## Changelog
+`0.8.0` - Added `robomagellan_world.sdf`.  Set torsional friction to 0 to wheels
+and SDF's ground plane so simulated robot can turn into place.
+
 `0.7.0` - `robomagellan.urdf.xacro` has removed the `mimic_wheel` macro and
 condensed it with the `wheel` macro and an `xacro:if`.
 
