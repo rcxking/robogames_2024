@@ -1,0 +1,30 @@
+This is a list of useful resources and links for the RoboMagellan competition.
+
+Useful ROS Nodes/Packages
+-------------------------
+1) Keyboard Teleop - https://docs.ros.org/en/rolling/p/teleop_twist_keyboard/
+2) ros2_control - https://control.ros.org/rolling/index.html
+3) ros2_controllers/differential drive controller - https://control.ros.org/rolling/doc/ros2_controllers/diff_drive_controller/doc/userdoc.html
+
+Useful ROS Commands
+-------------------
+1) To publish velocity commands to the differential drive controller use:
+```
+ros2 topic pub /robomagellan_controller/cmd_vel geometry_msgs/msg/TwistStamped 'header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: ''
+twist:
+  linear:
+    x: 0.5
+    y: 0.0
+    z: 0.0
+  angular:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+'
+```
+
+
