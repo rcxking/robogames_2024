@@ -17,9 +17,32 @@ def generate_launch_description():
             get_package_share_directory("robomagellan_hw_interface"),
             "launch",
             "hardware_interface.launch.py"
+        )
+    )
+
+    # Load the differential drive controller
+    diff_drive_controller = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("robomagellan_controller"),
+            "launch",
+            "controller.launch.py"
+        )
+    )
+
+    # Joystick support
+    joystick = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("robomagellan_controller"),
+            "launch",
+            "joystick_teleop.launch.py"
         ),
+        launch_arguments={
+            "use_sim_time": "False"
+        }.items()
     )
 
     return LaunchDescription([
-        hw_interface
+        hw_interface,
+        diff_drive_controller,
+        joystick
     ])
