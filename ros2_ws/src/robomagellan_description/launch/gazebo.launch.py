@@ -41,12 +41,14 @@ def generate_launch_description():
     joints to work (used to tie the rear wheels with their respective side's
     front wheels) we need to change the physics engine from DART to Bullet.
     """
+    world_file = str(os.path.join(robomagellan_description, "worlds",
+                                  "robomagellan_world.sdf"))
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory("ros_gz_sim"), "launch"),
             "/gz_sim.launch.py"]),
             launch_arguments=[
-                ("gz_args", [" -v 4", " -r", " empty.sdf", " --physics-engine",
+                ("gz_args", [" -v 4", " -r ", world_file, " --physics-engine",
                              " gz-physics-bullet-featherstone-plugin"])
             ]
     )

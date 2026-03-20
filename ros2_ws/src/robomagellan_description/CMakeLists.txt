@@ -6,7 +6,7 @@ find_package(urdf REQUIRED)
 
 # Install directories
 install(
-  DIRECTORY launch rviz urdf
+  DIRECTORY launch rviz urdf worlds
   DESTINATION share/${PROJECT_NAME}
 )
 
