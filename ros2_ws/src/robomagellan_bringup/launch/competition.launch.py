@@ -14,7 +14,7 @@ def generate_launch_description():
     # Load the robot's hardware interfaces
     hw_interface = IncludeLaunchDescription(
         os.path.join(
-            get_package_share_directory("robomagellan_hw_interface"),
+            get_package_share_directory("robomagellan_firmware"),
             "launch",
             "hardware_interface.launch.py"
         )
