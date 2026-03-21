@@ -16,4 +16,60 @@ find_package(std_msgs REQUIRED)
 find_package(PkgConfig)
 pkg_check_modules(SERIAL libserial)
 
+# Hardware interface plugin
+add_library(${PROJECT_NAME} SHARED
+  src/robomagellan_interface.cpp
+)
+target_include_directories(${PROJECT_NAME} PRIVATE
+  include
+  "${SERIAL_INCLUDE_DIRS}"
+)
+target_link_libraries(${PROJECT_NAME}
+  "${SERIAL_LDFLAGS}"
+)
+ament_target_dependencies(${PROJECT_NAME}
+  hardware_interface
+  pluginlib
+  rclcpp
+  rclcpp_lifecycle
+)
+
+# Hardware interface plugin description
+pluginlib_export_plugin_description_file(hardware_interface
+  robomagellan_interface.xml
+)
+
+# Install libraries/plugins
+install(
+  TARGETS ${PROJECT_NAME}
+  DESTINATION lib
+)
+
+# Install headers
+install(
+  DIRECTORY include
+  DESTINATION include
+)
+
+# Install launch files
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+ament_export_include_directories(
+  include
+)
+
+ament_export_libraries(
+  ${PROJECT_NAME}
+)
+
+ament_export_dependencies(
+  hardware_interface
+  pluginlib
+  rclcpp
+  rclcpp_lifecycle
+)
+
 ament_package()
