@@ -1,0 +1,10 @@
+<!-- robomagellan_interface.xml -->
+<library path="robomagellan_firmware">
+  <class name="robomagellan_firmware/RobomagellanInterface"
+         type="robomagellan_firmware::RobomagellanInterface"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Robomagellan Hardware Interface
+    </description>
+  </class>
+</library>
