@@ -16,4 +16,6 @@ The hardware interface plugin is loaded from the robot's URDF
 (`robomagellan.urdf.xacro` within the `robomagellan_description` package).
 
 ## Changelog
+`0.2.0` - `libserial` connections/close connections to the Arduino Mega.
+
 `0.1.0` - Initial package

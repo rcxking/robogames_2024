@@ -26,6 +26,9 @@ The following is a list of the Python launch files and their purpose:
    competition environment.
 
 ## Changelog
+`0.9.0` - `ros2_control.xacro` uses `/dev/arduino` instead of `/dev/ttyUSB0`
+thanks to the `99-arduino.rules` `udev` rules.
+
 `0.8.0` - Added `robomagellan_world.sdf`.  Set torsional friction to 0 to wheels
 and SDF's ground plane so simulated robot can turn into place.
 
