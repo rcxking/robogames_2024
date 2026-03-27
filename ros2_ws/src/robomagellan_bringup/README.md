@@ -11,6 +11,9 @@ The following is a list of the Python launch files and their purpose:
 2. `sim.launch.py` - Gazebo/simulated robot startup
 
 ## Changelog
+`0.5.0` - `competition.launch.py` now spawns the hardware interface and joystick
+nodes
+
 `0.4.0` - `sim.launch.py` spawns Rviz2 node
 
 `0.3.0` - Spawning `joy`/`joy_teleop` nodes for Xbox controller simulation
