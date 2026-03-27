@@ -76,7 +76,6 @@ robomagellan_controller:
         has_acceleration_limits: true
         max_acceleration: 0.7
         min_acceleration: -0.7
-        has_jerk_limits: false
     angular:
       z:
         has_velocity_limits: true
@@ -85,4 +84,3 @@ robomagellan_controller:
         has_acceleration_limits: true
         max_acceleration: 5.0
         min_acceleration: -5.0
-        has_jerk_limits: false
