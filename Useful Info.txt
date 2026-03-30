@@ -1,10 +1,51 @@
 This is a list of useful resources and links for the RoboMagellan competition.
 
+Robomagellan Competition Rules
+------------------------------
+1) Robogames Robomagellan Rules - https://robogames.net/rules/magellan.php
+
+Robotic Parts Suppliers
+-----------------------
+1) West Coast Products (WCP) - https://wcproducts.com/
+2) The Robot Marketplace - https://www.robotmarketplace.com/
+3) CTR Electronics Talon SRX Motor Controller - https://store.ctr-electronics.com/products/talon-srx
+
 Useful ROS Nodes/Packages
 -------------------------
 1) Keyboard Teleop - https://docs.ros.org/en/rolling/p/teleop_twist_keyboard/
 2) ros2_control - https://control.ros.org/rolling/index.html
-3) ros2_controllers/differential drive controller - https://control.ros.org/rolling/doc/ros2_controllers/diff_drive_controller/doc/userdoc.html
+3) ros2_control Concepts & Simulation - https://articulatedrobotics.xyz/tutorials/mobile-robot/applications/ros2_control-concepts/
+4) ros2_controllers/differential drive controller - https://control.ros.org/rolling/doc/ros2_controllers/diff_drive_controller/doc/userdoc.html
+5) Installing ROS 2 Jazzy on Raspberry Pi - https://docs.ros.org/en/jazzy/How-To-Guides/Installing-on-Raspberry-Pi.html
+6) Nav2 - https://docs.nav2.org/index.html
+
+Odometry/Controls
+-----------------
+1) Tuning a PID Controller - http://brettbeauregard.com/blog/2011/04/improving-the-beginners-pid-tuning-changes/
+2) PID Motor Control - https://andrewjkramer.net/pid-motor-control/
+3) Wheel Odometry Model for Differential Drive Robotics - https://medium.com/@nahmed3536/wheel-odometry-model-for-differential-drive-robotics-91b85a012299
+4) Arduino Magnetic Quadrature Encoder Library - https://www.pjrc.com/teensy/td_libs_Encoder.html
+5) `diff_drive_controller` Parameters - https://wiki.ros.org/diff_drive_controller
+
+IMU
+---
+1) Sparkfun GPS Breakout (ZOE-M8Q/SAM-M8Q) Hookup Guide - https://learn.sparkfun.com/tutorials/sparkfun-gps-breakout-zoe-m8q-and-sam-m8q-hookup-guide
+2) Sparkfun u-blox GNSS Arduino Library - https://github.com/sparkfun/SparkFun_u-blox_GNSS_Arduino_Library
+3) Sparkfun GNSS Breakout SAM-M8Q - https://www.sparkfun.com/sparkfun-gps-breakout-chip-antenna-sam-m8q-qwiic.html
+4) Sparkfun MPU-9250 Hookup Guide - https://learn.sparkfun.com/tutorials/mpu-9250-hookup-guide/all
+
+Navigation
+----------
+1) Calculate Distance/Bearing between Latitude/Longitude Points - https://www.movable-type.co.uk/scripts/latlong.html
+2) The Haversine Formula - https://www.themathdoctors.org/distances-on-earth-2-the-haversine-formula/
+
+Software Libraries
+------------------
+1) LibSerial - https://libserial.readthedocs.io/en/latest/index.html
+
+Mechanical
+----------
+1) WCP Belt Calculator - https://wcproducts.com/pages/calculator-belt
 
 Useful ROS Commands
 -------------------
