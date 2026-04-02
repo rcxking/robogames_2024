@@ -15,7 +15,15 @@ RobomagellanInterface::RobomagellanInterface() {
 }
 
 RobomagellanInterface::~RobomagellanInterface() {
-  // TODO: Close any serial connections here
+  // Close Arduino serial connection
+  if (arduino_.IsOpen()) {
+    try {
+      arduino_.Close();
+    } catch (...) {
+      RCLCPP_FATAL_STREAM(rclcpp::get_logger("RobomagellanInterface"),
+          "ERROR in closing connection to port: " << port_);
+    }
+  }
 }
 
 // HW interface initialization really happens here
@@ -23,6 +31,15 @@ CallbackReturn RobomagellanInterface::on_init(const hardware_interface::Hardware
   const CallbackReturn result = hardware_interface::SystemInterface::on_init(params);
   if (result != CallbackReturn::SUCCESS) {
     return result;
+  }
+
+  // Attempt to get the Arduino serial port name
+  try {
+    port_ = info_.hardware_parameters.at("port");
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("RobomagellanInterface"), "Using Arduino serial port: " << port_);
+  } catch (const std::out_of_range &e) {
+    RCLCPP_FATAL(rclcpp::get_logger("RobomagellanInterface"), "ERROR: No serial port provided");
+    return CallbackReturn::FAILURE;
   }
 
   /*
@@ -77,7 +94,22 @@ CallbackReturn RobomagellanInterface::on_activate(const rclcpp_lifecycle::State 
   position_states_   = {0.0, 0.0};
   velocity_states_   = {0.0, 0.0};
 
-  // TODO: Connect to any serial interfaces here
+  // Connect to Arduino
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("RobomagellanInterface"), "Attempting to connect to Arduino through port: " << port_);
+
+  try {
+    arduino_.Open(port_);
+
+    // Arduino Mega maximum baud rate is 115200
+    arduino_.SetBaudRate(LibSerial::BaudRate::BAUD_115200);
+
+    RCLCPP_INFO(rclcpp::get_logger("RobomagellanInterface"), "Successfully connected to Arduino");
+  } catch (...) {
+    RCLCPP_FATAL_STREAM(rclcpp::get_logger("RobomagellanInterface"),
+        "ERROR: Failed to connect to Arduino through port: " << port_);
+    return CallbackReturn::FAILURE;
+  }
+
   RCLCPP_INFO(rclcpp::get_logger("RobomagellanInterface"),
       "Hardware started; ready to receive commands");
   return CallbackReturn::SUCCESS;
@@ -86,7 +118,18 @@ CallbackReturn RobomagellanInterface::on_activate(const rclcpp_lifecycle::State 
 CallbackReturn RobomagellanInterface::on_deactivate(const rclcpp_lifecycle::State &) {
   RCLCPP_INFO(rclcpp::get_logger("RobomagellanInterface"), "Stopping robot hardware");
 
-  // TODO: Close any serial interfaces here
+  // Close Arduino connection
+  if (arduino_.IsOpen()) {
+    RCLCPP_INFO(rclcpp::get_logger("RobomagellanInterface"), "Shutting down Arduino connection");
+
+    try {
+      arduino_.Close();
+      RCLCPP_INFO(rclcpp::get_logger("RobomagellanInterface"), "Successfully shut down Arduino connection");
+    } catch (...) {
+      RCLCPP_FATAL_STREAM(rclcpp::get_logger("RobomagellanInterface"), "ERROR: Failed to shut down Arduino connection on port: " << port_);
+    }
+  }
+
   RCLCPP_INFO(rclcpp::get_logger("RobomagellanInterface"), "Hardware stopped");
 
   return CallbackReturn::SUCCESS;
@@ -101,6 +144,8 @@ hardware_interface::return_type RobomagellanInterface::read(const rclcpp::Time &
 hardware_interface::return_type RobomagellanInterface::write(const rclcpp::Time &,
                                                              const rclcpp::Duration &) {
   // TODO: Send any serial data here
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("RobomagellanInterface"),
+      "Writing velocities: " << velocity_commands_[0] << "; " << velocity_commands_[1]);
   return hardware_interface::return_type::OK;
 }
 

@@ -10,6 +10,11 @@ robotics competition.
 
 The robot is running Ubuntu 24.04 and needs ROS 2 Jazzy installed.
 
+Install the following dependencies:
+```
+libserial-dev
+```
+
 ## New Robot Installation Steps
 
 1) Install Ubuntu 24.04 (Noble) and ROS 2 Jazzy onto a Raspberry Pi 5

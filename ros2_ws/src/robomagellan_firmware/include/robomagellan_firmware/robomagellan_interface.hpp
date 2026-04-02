@@ -7,10 +7,12 @@
 #define __ROBOMAGELLAN_INTERFACE_HPP__
 
 #include <hardware_interface/system_interface.hpp>
+#include <libserial/SerialPort.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 #include <rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp>
 
+#include <string>
 #include <vector>
 
 namespace robomagellan_firmware {
@@ -58,6 +60,12 @@ public:
   hardware_interface::return_type write(const rclcpp::Time &, const rclcpp::Duration &) override;
 
 private:
+  // Serial connection to the Arduino
+  LibSerial::SerialPort arduino_;
+
+  // Arduino port name
+  std::string port_;
+
   // Velocity commands sent to the motors
   std::vector<double> velocity_commands_;
 
