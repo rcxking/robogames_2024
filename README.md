@@ -10,6 +10,21 @@ robotics competition.
 
 The robot is running Ubuntu 24.04 and needs ROS 2 Jazzy installed.
 
+## New Robot Installation Steps
+
+1) Install Ubuntu 24.04 (Noble) and ROS 2 Jazzy onto a Raspberry Pi 5
+
+2) On an Arduino Mega flash in the Arduino code `robomagellan_2024.ino` inside
+the `arduino_code` directory.
+
+3) Copy the `99-arduino.rules` from the `udev_rules` directory into
+`/etc/udev/rules.d` so the Arduino Mega will be associated with the device file
+`/dev/arduino`.  Be sure to call `sudo udevadm control --reload-rules && sudo
+udevadm trigger` to apply this rule.
+
+4) Build the `ros2` workspace by executing `colcon build` inside
+`robogames_2024/ros2_ws`.
+
 ## Running the Robot
 
 The `robomagellan_bringup` package contains the launch files used to start the
