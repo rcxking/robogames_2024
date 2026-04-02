@@ -1,38 +1,15 @@
 /*
  * robomagellan_2024.ino
  *
- * Arduino code to gather data from sensors and send motor commands for the
- * Robogames 2024 RoboMagellan competition.
- *
- * Bryant Pong
- * 12/3/23
+ * Arduino code to send velocity commands (rad/s) to the motor controllers and
+ * reads/computes the wheel velocities in rad/s from the encoders.
  */
 
 // Quadrature Encoders
 #include <Encoder.h>
 
-// Needed for I2C to GPS
-#include <Wire.h>
-
-// Sparkfun u-blox GNSS V3 Library (SAM-M10Q GPS)
-#include <SparkFun_u-blox_GNSS_v3.h>
-
-// Sparkfun BN008x 9 DOF IMU Library
-#include "SparkFun_BNO08x_Arduino_Library.h"
-
-/*
- * When debugging the Arduino code it can be helpful to enable/disable certain
- * sensors.  For a competition run all these should be 1.
- */
-#define ENABLE_GPS (1)
-#define ENABLE_ENCODERS (1)
-#define ENABLE_IMU (1)
-
-// To reduce I2C traffic from the GPS, only query the GPS every second
-unsigned long last_gps_time = 0;
-
-// GPS Manager
-SFE_UBLOX_GNSS myGNSS;
+// Enable debug statements?
+#define ENABLE_DEBUGS (0)
 
 /*
  * CIMCoder pins.  Each CIMCoder requires 2 pins for Channels A/B.  For best
@@ -45,67 +22,39 @@ SFE_UBLOX_GNSS myGNSS;
  * Because the motors have a single gear attached, they are "reversed", so
  * Channel A should be the next pin from Channel B.
  */
-constexpr int LEFT_ENCODER_CHAN_A = 3;
-constexpr int LEFT_ENCODER_CHAN_B = 2;
+constexpr int LEFT_ENCODER_CHAN_A  = 3;
+constexpr int LEFT_ENCODER_CHAN_B  = 2;
 constexpr int RIGHT_ENCODER_CHAN_A = 19;
 constexpr int RIGHT_ENCODER_CHAN_B = 18;
 
 Encoder leftEncoder(LEFT_ENCODER_CHAN_A, LEFT_ENCODER_CHAN_B);
 Encoder rightEncoder(RIGHT_ENCODER_CHAN_A, RIGHT_ENCODER_CHAN_B);
 
-// IMU manager (connected via I2C address 0x4B)
-BNO08x myIMU;
+// Last time wheel angular velocities were calculated
+unsigned long last_time_ms = 0;
+
+// Time (in ms) to compute the wheel velocities
+const unsigned long COMPUTE_TIME_MS = 100;
+
+// Current left/right wheel velocities (rad/s)
+double left_wheel_vel_rad_per_sec  = 0.0;
+double right_wheel_vel_rad_per_sec = 0.0;
 
 /*
- * For the most reliable interaction with the SHTP bus, we need
- * to use hardware reset control and monitor the H_INT pin.  The
- * H_INT pin will go low when it's okay to talk on the SHTP bus.
- * Define as -1 to disable these features.
- */
-#define BNO08X_INT (A4)
-#define BNO08X_RST (A5)
-#define BNO08X_ADDR (0x4B)
-
-// To reduce traffic from the IMU only update the IMU readings periodically
-unsigned long last_imu_time = 0;
-
-/*
- * Sensor enum values.  These are (in order)):
+ * CimCoder V2 tick to radians conversion factor.
  *
- * 1) GPS Latitude (degrees)
- * 2) GPS Longitude (degrees)
- * 3) GPS Altitude (meters)
- * 4) Left Wheel Encoder ticks
- * 5) Right Wheel Encoder ticks
- * 6-9) IMU Accelerometer (meters/second^2)
- * 11-13) IMU Gyroscope (radians/second)
- * 14-16) IMU Magnetometer (teslas)
- * 17-20) IMU Orientation Vector (quaternion)
+ * The encoders are CimCoder V2 encoders which generate 20 ticks per
+ * revolution.  These are attached to the motor shafts.  Also on the
+ * motor shaft is an 11-tooth gear connected to a 72-tooth gear on
+ * the drive shaft.
+ *
+ * 20 ticks = 2pi radians; 1 tick = pi/10 radians
+ *
+ *           pi           11-tooth gear   11*pi
+ * 1 Tick =  -- radians * ------------- = ----- radians
+ *           10           72-tooth gear    720
  */
-enum SensorValues {
-  GPS_LATITUDE_DEGS = 0,
-  GPS_LONGITUDE_DEGS,
-  GPS_ALTITUDE_M,
-  LEFT_ENCODER_TICKS,
-  RIGHT_ENCODER_TICKS,
-  ACC_X_MS2,
-  ACC_Y_MS2,
-  ACC_Z_MS2,
-  GYR_X_RPS,
-  GYR_Y_RPS,
-  GYR_Z_RPS,
-  MAG_X_T,
-  MAG_Y_T,
-  MAG_Z_T,
-  QUAT_I,
-  QUAT_J,
-  QUAT_K,
-  QUAT_REAL,
-  NUM_SENSOR_VALUES
-};
-
-// Sensor values are cached here
-float sensor_values[NUM_SENSOR_VALUES];
+const double TICKS_TO_RADIANS = (11.0 * PI / 720.0);
 
 void setup() {
   // Wait for a connection to the Raspberry Pi
@@ -119,156 +68,64 @@ void setup() {
     delay(10);
   }
 
-  // Start I2C connection
-  Wire.begin();
-
-  // Set the I2C clock to high speed - 400kHz
-  Wire.setClock(400000);
-
-  // Establish GPS connection (if enabled); on failure stay in setup()
-#if ENABLE_GPS
-  if (myGNSS.begin() == false) {
-    while (1);
-  }
-
-  /*
-   * GPS Configurations:
-   * 1) Set the I2C port to output UBX only/turn off NMEA noise
-   * 2) Save only the comm. port settings to flash and BBR
-   */
-  myGNSS.setI2COutput(COM_TYPE_UBX);
-  myGNSS.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT);
-#endif
-
-  // Reset the encoders to home position
-#if ENABLE_ENCODERS
+  // Reset encoder counts
   leftEncoder.write(0);
   rightEncoder.write(0);
-#endif
-
-  // Initialize IMU (if enabled); on failure stay in setup()
-#if ENABLE_IMU
-  if (myIMU.begin(BNO08X_ADDR, Wire, BNO08X_INT, BNO08X_RST) == false) {
-    Serial.println(F("IMU: Failed to initialize IMU"));
-    while(1);
-  }
-  ConfigureIMU();
-#endif
 }
 
 void loop() {
-#if ENABLE_GPS
-  // Update cached GPS values periodically to avoid spamming I2C bus
-  if (millis() - last_gps_time > 1000) {
-    // Update time GPS values were updated
-    last_gps_time = millis();
+  // Time to compute motor velocity?
+  const unsigned long current_time_ms = millis();
+  const unsigned long time_delta_ms   = current_time_ms - last_time_ms;
 
-    // Latitude and longitude need to be divided by 10^7 to get degrees
-    sensor_values[GPS_LATITUDE_DEGS] = myGNSS.getLatitude() / 10000000.;
-    sensor_values[GPS_LONGITUDE_DEGS] = myGNSS.getLongitude() / 10000000.;
+  if (time_delta_ms >= COMPUTE_TIME_MS) {
+    // Encoder library uses 4x counting so need to divide read() ticks by 4 to get true tick count
+    const int32_t true_left_ticks  = leftEncoder.read() / 4;
+    const int32_t true_right_ticks = rightEncoder.read() / 4;
 
-    // Altitude needs to be divided by 1000 to get meters
-    sensor_values[GPS_ALTITUDE_M] = myGNSS.getAltitudeMSL() * 1e-3;
-  }
+    // Compute/update wheel velocities
+    const double time_delta_s = time_delta_ms / 1000.0;
+    const double left_radians = true_left_ticks * TICKS_TO_RADIANS;
+    const double right_radians = true_right_ticks * TICKS_TO_RADIANS;
+    left_wheel_vel_rad_per_sec  = left_radians / time_delta_s;
+    right_wheel_vel_rad_per_sec = right_radians / time_delta_s;
+
+    // Debugs for wheel velocities
+#if ENABLE_DEBUGS
+    Serial.print("time_delta_s: ");
+    Serial.print(time_delta_s);
+    Serial.print(" TICKS_TO_RADIANS: ");
+    Serial.print(TICKS_TO_RADIANS);
+    Serial.print(" true_left_ticks: ");
+    Serial.print(true_left_ticks);
+    Serial.print(" true_right_ticks: ");
+    Serial.print(true_right_ticks);
+    Serial.print(" left_radians: ");
+    Serial.print(left_radians);
+    Serial.print(" right_radians: ");
+    Serial.print(right_radians);
+    Serial.print(" left_wheel_vel_rad_per_sec: ");
+    Serial.print(left_wheel_vel_rad_per_sec);
+    Serial.print(" right_wheel_vel_rad_per_sec: ");
+    Serial.println(right_wheel_vel_rad_per_sec);
 #endif
 
-#if ENABLE_ENCODERS
-  /*
-   * Update encoder readings.  The library provides 4X counting, which means that
-   * each real tick is 4 ticks.
-   */
-  sensor_values[LEFT_ENCODER_TICKS] = leftEncoder.read() / 4;
-  sensor_values[RIGHT_ENCODER_TICKS] = rightEncoder.read() / 4;
-#endif
+    /*
+     * Publish wheel velocities to the Raspberry Pi.  The data is a string of the format:
+     *
+     * L<left wheel velocity in rad/sec>;R<right wheel velocity in rad/sec>;
+     *
+     * Serial.println() prints floating point values with 2 floating point
+     * digits; this is adequate because 0.01 radians is about a half degree.
+     */
+    const String wheel_vel_str = "L" + String(left_wheel_vel_rad_per_sec) + ";R" + String(right_wheel_vel_rad_per_sec) + ";";
+    Serial.println(wheel_vel_str);
 
-#if ENABLE_IMU
-  if (myIMU.wasReset()) {
-    ConfigureIMU();
+    // Reset encoder counts for next cycle
+    leftEncoder.write(0);
+    rightEncoder.write(0);
+
+    // Update last time wheel velocities were computed
+    last_time_ms = current_time_ms;
   }
-
-  // Update IMU readings periodically to avoid spamming I2C bus
-  if (millis() - last_imu_time > 30) {
-    // Update time IMU values were updated
-    last_imu_time = millis();
-
-    // Update values from the IMU
-    if (myIMU.getSensorEvent() == true) {
-      const uint8_t sensor_event_id = myIMU.getSensorEventID();
-
-      if (sensor_event_id == SENSOR_REPORTID_ACCELEROMETER) {
-        // Accelerometer data received
-        sensor_values[ACC_X_MS2] = myIMU.getAccelX();
-        sensor_values[ACC_Y_MS2] = myIMU.getAccelY();
-        sensor_values[ACC_Z_MS2] = myIMU.getAccelZ();
-      } else if (sensor_event_id == SENSOR_REPORTID_GYROSCOPE_CALIBRATED) {
-        // Gyro data received
-        sensor_values[GYR_X_RPS] = myIMU.getGyroX();
-        sensor_values[GYR_Y_RPS] = myIMU.getGyroY();
-        sensor_values[GYR_Z_RPS] = myIMU.getGyroZ();
-      } else if (sensor_event_id == SENSOR_REPORTID_MAGNETIC_FIELD) {
-        // Magnetometer data received
-        sensor_values[MAG_X_T] = myIMU.getMagX() * 1e-6;
-        sensor_values[MAG_Y_T] = myIMU.getMagY() * 1e-6;
-        sensor_values[MAG_Z_T] = myIMU.getMagZ() * 1e-6;
-      } else if (sensor_event_id == SENSOR_REPORTID_ROTATION_VECTOR) {
-        sensor_values[QUAT_I] = myIMU.getQuatI();
-        sensor_values[QUAT_J] = myIMU.getQuatJ();
-        sensor_values[QUAT_K] = myIMU.getQuatK();
-        sensor_values[QUAT_REAL] = myIMU.getQuatReal();
-      }
-    }
-  }
-#endif
-
-  /*
-   * Publish the sensor data.  To reduce latency this is a single string of the
-   * form:
-   * S <sensor_values array>\r\n
-   *
-   * To help verify the data sent is accurate, look for the "S" character at the
-   * beginning and the \r\n at the end.
-   */
-  String temp("S ");
-  for (size_t i = 0; i < NUM_SENSOR_VALUES; ++i) {
-    // Need special cases for the encoder ticks as int32_t values
-    if ((i == LEFT_ENCODER_TICKS) || (i == RIGHT_ENCODER_TICKS)) {
-      temp += String(int32_t(sensor_values[i]));
-    } else {
-      temp += String(sensor_values[i]);
-    }
-    temp += " ";
-  }
-  Serial.println(temp);
-
-  // Need a small delay to prevent Arduino thrashing
-  delay(20);
-}
-
-/*
- * Configure the IMU.  Per https://github.com/sparkfun/SparkFun_BNO08x_Arduino_Library/issues/2
- * the initial call to enabling any IMU sensor will always fail and cause a sensor reset.
- */
-void ConfigureIMU() {
-  // Enable accelerometer
-  if (myIMU.enableAccelerometer() == false) {
-    Serial.println(F("IMU: Failed to enable accelerometer"));
-  }
-
-  // Enable gyroscope
-  if (myIMU.enableGyro() == false) {
-    Serial.println(F("IMU: Failed to enable gyroscope"));
-  }
-
-  // Enable magnetometer
-  if (myIMU.enableMagnetometer() == false) {
-    Serial.println(F("IMU: Failed to enable magnetometer"));
-  }
-
-  // Enable rotation vector
-  if (myIMU.enableRotationVector() == false) {
-    Serial.println(F("IMU: Failed to enable rotation vector"));
-  }
-
-  // Small delay needed to allow configuration to take into effect
-  delay(100);
 }
