@@ -8,6 +8,9 @@
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <pluginlib/class_list_macros.hpp>
 
+#include <sstream>
+#include <string>
+
 namespace robomagellan_firmware {
 
 // Default constructor is needed but on_init() does all the initialization
@@ -137,7 +140,45 @@ CallbackReturn RobomagellanInterface::on_deactivate(const rclcpp_lifecycle::Stat
 
 hardware_interface::return_type RobomagellanInterface::read(const rclcpp::Time &,
                                                             const rclcpp::Duration &) {
-  // TODO: Parse any serial data/strings here
+  // Read the wheel velocities from the Arduino
+  if (arduino_.IsDataAvailable()) {
+    /*
+     * Time delta between now and the previous time read() was called.  Need
+     * this to integrate the wheel velocities to get wheel position.
+     */
+    const double dt = (rclcpp::Clock().now() - last_run_).seconds();
+
+    /*
+     * Arduino sends string of the format:
+     * "L<left wheel vel>;R<right wheel vel>;"
+     */
+    std::string next_vels;
+    arduino_.ReadLine(next_vels);
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("RobomagellanInterface"),
+        "Received next_vels: " << next_vels);
+
+    std::string token;
+    std::stringstream ss(next_vels);
+    while (std::getline(ss, token, ';')) {
+      // First character is L (left) or R (right) motor.  Ignore everything else
+      const char first_char = token[0];
+
+      if (first_char == 'L') {
+        velocity_states_.at(0) = std::stod(token.substr(1, token.size()));
+        position_states_.at(0) += velocity_states_.at(0) * dt;
+      } else if (first_char == 'R') {
+        velocity_states_.at(1) = std::stod(token.substr(1, token.size()));
+        position_states_.at(1) += velocity_states_.at(1) * dt;
+      } else {
+        // ERROR: Unrecognized character
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger("RobomagellanInterface"),
+            "ERROR: Unrecognized first_char: " << first_char);
+      }
+    }
+
+    // Update last time read() was run
+    last_run_ = rclcpp::Clock().now();
+  }
   return hardware_interface::return_type::OK;
 }
 
