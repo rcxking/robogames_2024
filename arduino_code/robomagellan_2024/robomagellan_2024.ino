@@ -85,10 +85,8 @@ void loop() {
 
     // Compute/update wheel velocities
     const double time_delta_s = time_delta_ms / 1000.0;
-    const double left_radians = true_left_ticks * TICKS_TO_RADIANS;
-    const double right_radians = true_right_ticks * TICKS_TO_RADIANS;
-    left_wheel_vel_rad_per_sec  = left_radians / time_delta_s;
-    right_wheel_vel_rad_per_sec = right_radians / time_delta_s;
+    left_wheel_vel_rad_per_sec  = (true_left_ticks * TICKS_TO_RADIANS) / time_delta_s;
+    right_wheel_vel_rad_per_sec = (true_right_ticks * TICKS_TO_RADIANS) / time_delta_s;
 
     // Debugs for wheel velocities
 #if ENABLE_DEBUGS
@@ -100,10 +98,6 @@ void loop() {
     Serial.print(true_left_ticks);
     Serial.print(" true_right_ticks: ");
     Serial.print(true_right_ticks);
-    Serial.print(" left_radians: ");
-    Serial.print(left_radians);
-    Serial.print(" right_radians: ");
-    Serial.print(right_radians);
     Serial.print(" left_wheel_vel_rad_per_sec: ");
     Serial.print(left_wheel_vel_rad_per_sec);
     Serial.print(" right_wheel_vel_rad_per_sec: ");
@@ -118,7 +112,7 @@ void loop() {
      * Serial.println() prints floating point values with 2 floating point
      * digits; this is adequate because 0.01 radians is about a half degree.
      */
-    const String wheel_vel_str = "L" + String(left_wheel_vel_rad_per_sec) + ";R" + String(right_wheel_vel_rad_per_sec) + ";";
+    const String wheel_vel_str = "L" + String(left_wheel_vel_rad_per_sec, 8) + ";R" + String(right_wheel_vel_rad_per_sec, 8) + ";";
     Serial.println(wheel_vel_str);
 
     // Reset encoder counts for next cycle
