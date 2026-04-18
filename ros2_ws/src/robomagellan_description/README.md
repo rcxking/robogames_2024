@@ -26,6 +26,8 @@ The following is a list of the Python launch files and their purpose:
    competition environment.
 
 ## Changelog
+`0.10.0` - Added simulated IMU for Gazebo simulation.
+
 `0.9.0` - `ros2_control.xacro` uses `/dev/arduino` instead of `/dev/ttyUSB0`
 thanks to the `99-arduino.rules` `udev` rules.
 

@@ -33,6 +33,7 @@ IMU
 2) Sparkfun u-blox GNSS Arduino Library - https://github.com/sparkfun/SparkFun_u-blox_GNSS_Arduino_Library
 3) Sparkfun GNSS Breakout SAM-M8Q - https://www.sparkfun.com/sparkfun-gps-breakout-chip-antenna-sam-m8q-qwiic.html
 4) Sparkfun MPU-9250 Hookup Guide - https://learn.sparkfun.com/tutorials/mpu-9250-hookup-guide/all
+5) Adding a Simulated IMU to Gazebo - https://gazebosim.org/docs/latest/sensors/
 
 Navigation
 ----------

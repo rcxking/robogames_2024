@@ -68,12 +68,20 @@ def generate_launch_description():
     /clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock maps the Gazebo gz.msgs.Clock
     message to the rosgraph_msgs/msg/Clock topic to allow ROS 2 to receive
     Gazebo simulation time.
+
+    /imu@sensor_msgs/msg/Imu[gz.msgs.IMU maps the Gazebo gz.msgs.IMU message to
+    the sensor_msgs/msg/Imu topic to allow ROS 2 to receive Gazebo simulated IMU
+    data.
     """
     gz_ros2_bridge = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
         arguments=[
-            "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock"
+            "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
+            "/imu@sensor_msgs/msg/Imu[gz.msgs.IMU"
+        ],
+        remappings=[
+            ('/imu', '/imu/out')
         ]
     )
 
