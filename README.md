@@ -27,7 +27,10 @@ the `arduino_code` directory.
 `/dev/arduino`.  Be sure to call `sudo udevadm control --reload-rules && sudo
 udevadm trigger` to apply this rule.
 
-4) Build the `ros2` workspace by executing `colcon build` inside
+4) Enable I2C support on the Raspberry Pi with the steps under `Configuring the
+Pi`: [Qwiic Shim for Raspberry Pi Hookup Guide](https://learn.sparkfun.com/tutorials/qwiic-shim-for-raspberry-pi-hookup-guide).
+
+5) Build the `ros2` workspace by executing `colcon build` inside
 `robogames_2024/ros2_ws`.
 
 ## Running the Robot

@@ -48,6 +48,10 @@ Mechanical
 ----------
 1) WCP Belt Calculator - https://wcproducts.com/pages/calculator-belt
 
+Electrical
+----------
+1) Raspberry Pi Qwiic Shim - https://www.sparkfun.com/sparkfun-qwiic-shim-for-raspberry-pi.html
+
 Useful ROS Commands
 -------------------
 1) To publish velocity commands to the differential drive controller use:
