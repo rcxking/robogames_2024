@@ -184,9 +184,34 @@ hardware_interface::return_type RobomagellanInterface::read(const rclcpp::Time &
 
 hardware_interface::return_type RobomagellanInterface::write(const rclcpp::Time &,
                                                              const rclcpp::Duration &) {
-  // TODO: Send any serial data here
+  // Write desired motor velocities to the Arduino
   RCLCPP_INFO_STREAM(rclcpp::get_logger("RobomagellanInterface"),
       "Writing velocities: " << velocity_commands_[0] << "; " << velocity_commands_[1]);
+
+  /*
+   * The motors_command is of the form:
+   *
+   * L<Desired left wheel velocity>;R<Desired right wheel velocity>;
+   *
+   * Desired wheel velocities come from the diff_drive_controller; they are in
+   * radians/second.
+   */
+  std::stringstream motors_command;
+  motors_command << "L" << velocity_commands_[0] << ";R"
+    << velocity_commands_[1] << ";";
+
+  // Send desired motors command to Arduino
+  try {
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("RobomagellanInterface"),
+        "Attempting to send motors_command: " << motors_command.str());
+    arduino_.Write(motors_command.str());
+  } catch (...) {
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("RobomagellanInterface"),
+        "ERROR: Unable to send motors_command " << motors_command.str() <<
+        " to Arduino on port: " << port_);
+    return hardware_interface::return_type::ERROR;
+  }
+
   return hardware_interface::return_type::OK;
 }
 
