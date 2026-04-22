@@ -25,6 +25,9 @@ public:
     kp_(kp), ki_(ki), kd_(kd) {
     // Connect to the specified motor controller
     controller_.attach(motor_pin);
+
+    // For safety send the STOP command to the controller
+    controller_.writeMicroseconds(STOP_PWM);
   }
 
   /*
@@ -48,7 +51,8 @@ public:
 
   // Displays the current PID constants' values
   String DisplayPIDConstants() const {
-    return String("KP: " + kp_ + "; KI: " + ki_ + "; KD: " + kd_);
+    return "KP: " + String(kp_) + "; KI: " + String(ki_) + "; KD: "
+      + String(kd_);
   }
 
 private:
@@ -67,7 +71,8 @@ private:
    * Current motor controller PWM signal.  Needs to be in the range [1000,
    * 2000].  1500 is STOP; 2000 is full forward; and 1000 is full reverse.
    */
-  int cur_pwm_cmd_ = 1500;
+  static constexpr int STOP_PWM = 1500;
+  int cur_pwm_cmd_ = STOP_PWM;
 
   /*
    * The Talon SRX motor controller uses PWM signals; create a Servo object to

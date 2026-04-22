@@ -8,6 +8,9 @@
 // Quadrature Encoders
 #include <Encoder.h>
 
+// PID motor control
+#include <PID.h>
+
 // Enable debug statements?
 #define ENABLE_DEBUGS (0)
 
@@ -29,6 +32,16 @@ constexpr int RIGHT_ENCODER_CHAN_B = 18;
 
 Encoder leftEncoder(LEFT_ENCODER_CHAN_A, LEFT_ENCODER_CHAN_B);
 Encoder rightEncoder(RIGHT_ENCODER_CHAN_A, RIGHT_ENCODER_CHAN_B);
+
+// PID motor controls and constants.  Use PWM pins for the controllers
+constexpr double KP                   = 1.125;
+constexpr double KI                   = 0.00001;
+constexpr double KD                   = 25.0;
+constexpr int    LEFT_CONTROLLER_PIN  = 6;
+constexpr int    RIGHT_CONTROLLER_PIN = 7;
+
+PID leftPID(KP, KI, KD, LEFT_CONTROLLER_PIN);
+PID rightPID(KP, KI, KD, RIGHT_CONTROLLER_PIN);
 
 // Last time wheel angular velocities were calculated
 unsigned long last_time_ms = 0;
@@ -91,6 +104,38 @@ void setup() {
 }
 
 void loop() {
+  // Any desired wheel velocities (rad/s) from the ROS stack?
+  if (Serial.available()) {
+    /*
+     * The desired wheel velocities are sent from the ROS stack in the form
+     * L<desired left velocity>;R<desired right velocity>;
+     *
+     * Desired wheel velocities are in rad/s.
+     */
+    const String next_command = Serial.readStringUntil(';');
+
+#if ENABLE_DEBUGS
+    Serial.print("next_command: ");
+    Serial.println(next_command);
+#endif
+
+    // Is this command for the left or right motor?
+    if (next_command.length() > 0) {
+      const char target_motor = next_command[0];
+      const double target_motor_vel = next_command.substring(1).toDouble();
+
+      if (target_motor == 'L') {
+        Serial.println("Received left motor command");
+        // Left motor command
+        leftPID.SendPWMCommand(left_wheel_vel_rad_per_sec, target_motor_vel);
+      } else if (target_motor == 'R') {
+        Serial.println("Received right motor command");
+        // Right motor command
+        rightPID.SendPWMCommand(right_wheel_vel_rad_per_sec, target_motor_vel);
+      }
+    }
+  }
+
   // Time to compute motor velocity?
   const unsigned long current_time_ms = millis();
   const unsigned long time_delta_ms   = current_time_ms - last_time_ms;
