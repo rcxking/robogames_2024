@@ -8,6 +8,9 @@
 // Quadrature Encoders
 //#include <Encoder.h>
 
+#include "ArduinoGraphics.h"
+#include "Arduino_LED_Matrix.h"
+
 // Enable debug statements?
 #define ENABLE_DEBUGS (0)
 
@@ -56,9 +59,12 @@ double right_wheel_vel_rad_per_sec = 0.0;
  */
 const double TICKS_TO_RADIANS = (11.0 * PI / 720.0);
 
+ArduinoLEDMatrix matrix;
+
 void setup() {
   // Wait for a connection to the Raspberry Pi
   Serial.begin(115200);
+  matrix.begin();
 
   // Need a short 150 ms delay otherwise Serial.print() will execute twice
   delay(150);
@@ -74,6 +80,54 @@ void setup() {
 }
 
 void loop() {
+  // Any desired wheel velocities (rad/s) from the ROS stack?
+  if (Serial.available()) {
+    /*
+     * The desired wheel velocities are sent from the ROS stack in the form
+     * L<desired left velocity>;R<desired right velocity>;
+     *
+     * Desired wheel velocities are in rad/s.
+     */
+    const String next_command = Serial.readStringUntil(';');
+    //Serial.print("next_command: ");
+    //Serial.println(next_command);
+
+    // Is this command for the left or right motor?
+    if (next_command.length() > 0) {
+      matrix.beginDraw();
+      matrix.stroke(0xFFFFFFFF);
+      matrix.textScrollSpeed(50);
+      matrix.textFont(Font_5x7);
+      matrix.beginText(0, 1, 0xFFFFFF);
+
+      const String scroll_text = "   " + next_command + "   ";
+      matrix.println(scroll_text.c_str());
+      matrix.endText(SCROLL_LEFT);
+      matrix.endDraw();
+
+      const char target_motor = next_command[0];
+      if (target_motor == 'L') {
+        //Serial.println("Received left motor command");
+        // Left motor command
+      } else if (target_motor == 'R') {
+        //Serial.println("Received right motor command");
+        // Right motor command
+      }
+    }
+  }
+
+#if 0
+  matrix.beginDraw();
+  matrix.stroke(0xFFFFFFFF);
+  matrix.textScrollSpeed(50);
+  const char *text = "   Hello World!   ";
+  matrix.textFont(Font_5x7);
+  matrix.beginText(0, 1, 0xFFFFFF);
+  matrix.println(text);
+  matrix.endText(SCROLL_LEFT);
+  matrix.endDraw();
+#endif
+
   // Time to compute motor velocity?
   const unsigned long current_time_ms = millis();
   const unsigned long time_delta_ms   = current_time_ms - last_time_ms;
@@ -113,7 +167,7 @@ void loop() {
      * digits; this is adequate because 0.01 radians is about a half degree.
      */
     const String wheel_vel_str = "L" + String(left_wheel_vel_rad_per_sec, 8) + ";R" + String(right_wheel_vel_rad_per_sec, 8) + ";";
-    Serial.println(wheel_vel_str);
+    //Serial.println(wheel_vel_str);
 
     // Reset encoder counts for next cycle
     //leftEncoder.write(0);
