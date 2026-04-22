@@ -17,7 +17,9 @@ libserial-dev
 
 ## New Robot Installation Steps
 
-1) Install Ubuntu 24.04 (Noble) and ROS 2 Jazzy onto a Raspberry Pi 5
+1) Install Ubuntu 24.04 (Noble) onto a Raspberry Pi 5 Micro SD card.
+
+2) Run `setup_pi.sh` to remove unneeded programs and install dependencies.
 
 2) On an Arduino Mega flash in the Arduino code `robomagellan_2024.ino` inside
 the `arduino_code` directory.
@@ -27,8 +29,8 @@ the `arduino_code` directory.
 `/dev/arduino`.  Be sure to call `sudo udevadm control --reload-rules && sudo
 udevadm trigger` to apply this rule.
 
-4) Enable I2C support on the Raspberry Pi with the steps under `Configuring the
-Pi`: [Qwiic Shim for Raspberry Pi Hookup Guide](https://learn.sparkfun.com/tutorials/qwiic-shim-for-raspberry-pi-hookup-guide).
+4) Ensure Ubuntu 24.04 has I2C support enabled by checking
+`/boot/firmware/config.txt` and ensuring that `dtparam=i2c_arm=on`.
 
 5) Build the `ros2` workspace by executing `colcon build` inside
 `robogames_2024/ros2_ws`.
