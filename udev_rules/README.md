@@ -45,3 +45,5 @@ filename.  Higher numbers will be applied last, meaning they take precedence.
 The following is a list of `udev` rules for the Robomagellan robot:
 1) `99-arduino.rules` - Associates an Arduino Mega to the device file
 `/dev/arduino`.
+2) `99-arduino-uno-r4.rules` - Associates an Arduino Uno R4 to the device file
+`/dev/arduino`.

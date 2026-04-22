@@ -1,0 +1,8 @@
+# 99-arduino-uno-r4.rules
+#
+# udev rules file for assigning an Arduino Uno R4 to device file /dev/arduino
+#
+# Arduino Mega has ID 2341:1002 (Vendor ID 2341, Product ID 1002 for Mega)
+#
+# The rule grants read/write permissions (0666) to the Arduino Mega using the symbolic link /dev/arduino
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="1002", MODE="0666", SYMLINK+="arduino"
