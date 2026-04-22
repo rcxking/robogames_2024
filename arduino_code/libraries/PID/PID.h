@@ -19,23 +19,44 @@ public:
    *   kp (double): Proportional constant
    *   ki (double): Integral constant
    *   kd (double): Derivative constant
-   *   motor_pin (int): Arduino pin connected to the motor controller
    */
-  PID(const double kp, const double ki, const double kd, const int motor_pin) :
-    kp_(kp), ki_(ki), kd_(kd) {
-    // Connect to the specified motor controller
-    controller_.attach(motor_pin);
+  PID(const double kp, const double ki, const double kd) :
+    des_vel_(0.0), kp_(kp), ki_(ki), kd_(kd) {
   }
 
   /*
-   * Given the current and desired motor velocities compute and send the next
-   * PWM motor command to the motor controller.
+   * Initializes the underlying Servo object to the specified motor pin.
+   *
+   * Parameters:
+   *   motor_pin (int): Pin to attach to
+   */
+  void ConnectToMotor(const int motor_pin) {
+    Serial.print("Attaching Servo controller_ to pin: ");
+    Serial.println(motor_pin);
+
+    // Connect to the specified motor controller
+    controller_.attach(motor_pin);
+
+    // For safety send the STOP command to the controller
+    controller_.writeMicroseconds(STOP_PWM);
+  }
+
+  /*
+   * Given the current compute and send the next PWM motor command to the motor
+   * controller.  Desired velocity used is des_vel_.
    *
    * Parameters:
    *   cur_vel (double): Current wheel velocity (rad/s)
-   *   des_vel (double): Desired wheel velocity (rad/s)
    */
-  void SendPWMCommand(const double cur_vel, const double des_vel);
+  void SendPWMCommand(const double cur_vel);
+
+  // Accessor/modifier for desired velocity (rad/s)
+  void SetDesiredVelocity(const double des_vel) {
+    des_vel_ = des_vel;
+    Serial.print("Setting desired velocity to: ");
+    Serial.println(des_vel_);
+  }
+  double GetDesiredVelocity() const { return des_vel_; }
 
   // Accessors/modifiers for PID constants.  Used when tuning PID constants
   void SetKP(const double kp) { kp_ = kp; }
@@ -48,10 +69,14 @@ public:
 
   // Displays the current PID constants' values
   String DisplayPIDConstants() const {
-    return String("KP: " + kp_ + "; KI: " + ki_ + "; KD: " + kd_);
+    return "KP: " + String(kp_, 9) + "; KI: " + String(ki_, 9) + "; KD: "
+      + String(kd_, 9);
   }
 
 private:
+  // Desired velocity (rad/s)
+  double des_vel_ = 0.0;
+
   // Proportional, integral, derivative constants
   double kp_ = 0.0;
   double ki_ = 0.0;
@@ -67,7 +92,8 @@ private:
    * Current motor controller PWM signal.  Needs to be in the range [1000,
    * 2000].  1500 is STOP; 2000 is full forward; and 1000 is full reverse.
    */
-  int cur_pwm_cmd_ = 1500;
+  static constexpr int STOP_PWM = 1500;
+  double cur_pwm_cmd_ = STOP_PWM;
 
   /*
    * The Talon SRX motor controller uses PWM signals; create a Servo object to
