@@ -6,7 +6,7 @@
  */
 
 // Quadrature Encoders
-#include <Encoder.h>
+//#include <Encoder.h>
 
 // Enable debug statements?
 #define ENABLE_DEBUGS (0)
@@ -27,8 +27,8 @@ constexpr int LEFT_ENCODER_CHAN_B  = 2;
 constexpr int RIGHT_ENCODER_CHAN_A = 19;
 constexpr int RIGHT_ENCODER_CHAN_B = 18;
 
-Encoder leftEncoder(LEFT_ENCODER_CHAN_A, LEFT_ENCODER_CHAN_B);
-Encoder rightEncoder(RIGHT_ENCODER_CHAN_A, RIGHT_ENCODER_CHAN_B);
+//Encoder leftEncoder(LEFT_ENCODER_CHAN_A, LEFT_ENCODER_CHAN_B);
+//Encoder rightEncoder(RIGHT_ENCODER_CHAN_A, RIGHT_ENCODER_CHAN_B);
 
 // Last time wheel angular velocities were calculated
 unsigned long last_time_ms = 0;
@@ -69,8 +69,8 @@ void setup() {
   }
 
   // Reset encoder counts
-  leftEncoder.write(0);
-  rightEncoder.write(0);
+  //leftEncoder.write(0);
+  //rightEncoder.write(0);
 }
 
 void loop() {
@@ -80,13 +80,13 @@ void loop() {
 
   if (time_delta_ms >= COMPUTE_TIME_MS) {
     // Encoder library uses 4x counting so need to divide read() ticks by 4 to get true tick count
-    const int32_t true_left_ticks  = leftEncoder.read() / 4;
-    const int32_t true_right_ticks = rightEncoder.read() / 4;
+    //const int32_t true_left_ticks  = leftEncoder.read() / 4;
+    //const int32_t true_right_ticks = rightEncoder.read() / 4;
 
     // Compute/update wheel velocities
-    const double time_delta_s = time_delta_ms / 1000.0;
-    left_wheel_vel_rad_per_sec  = (true_left_ticks * TICKS_TO_RADIANS) / time_delta_s;
-    right_wheel_vel_rad_per_sec = (true_right_ticks * TICKS_TO_RADIANS) / time_delta_s;
+    //const double time_delta_s = time_delta_ms / 1000.0;
+    //left_wheel_vel_rad_per_sec  = (true_left_ticks * TICKS_TO_RADIANS) / time_delta_s;
+    //right_wheel_vel_rad_per_sec = (true_right_ticks * TICKS_TO_RADIANS) / time_delta_s;
 
     // Debugs for wheel velocities
 #if ENABLE_DEBUGS
@@ -116,8 +116,8 @@ void loop() {
     Serial.println(wheel_vel_str);
 
     // Reset encoder counts for next cycle
-    leftEncoder.write(0);
-    rightEncoder.write(0);
+    //leftEncoder.write(0);
+    //rightEncoder.write(0);
 
     // Update last time wheel velocities were computed
     last_time_ms = current_time_ms;
