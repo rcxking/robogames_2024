@@ -184,6 +184,17 @@ hardware_interface::return_type RobomagellanInterface::read(const rclcpp::Time &
 
 hardware_interface::return_type RobomagellanInterface::write(const rclcpp::Time &,
                                                              const rclcpp::Duration &) {
+  // Check if either desired velocity is different than the last sent velocities
+  const bool left_vel_same = DoubleEquals(velocity_commands_[0],
+                                          last_left_cmd_);
+  const bool right_vel_same = DoubleEquals(velocity_commands_[1],
+                                           last_right_cmd_);
+
+  // Don't send the send commands repeatedly
+  if (left_vel_same && right_vel_same) {
+    return hardware_interface::return_type::OK;
+  }
+
   // Write desired motor velocities to the Arduino
   RCLCPP_INFO_STREAM(rclcpp::get_logger("RobomagellanInterface"),
       "Writing velocities: " << velocity_commands_[0] << "; " << velocity_commands_[1]);
@@ -211,6 +222,10 @@ hardware_interface::return_type RobomagellanInterface::write(const rclcpp::Time 
         " to Arduino on port: " << port_);
     return hardware_interface::return_type::ERROR;
   }
+
+  // Update last sent velocities
+  last_left_cmd_  = velocity_commands_[0];
+  last_right_cmd_ = velocity_commands_[1];
 
   return hardware_interface::return_type::OK;
 }

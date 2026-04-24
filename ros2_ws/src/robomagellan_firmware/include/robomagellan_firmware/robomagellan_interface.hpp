@@ -12,6 +12,7 @@
 #include <rclcpp_lifecycle/state.hpp>
 #include <rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp>
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -60,6 +61,19 @@ public:
   hardware_interface::return_type write(const rclcpp::Time &, const rclcpp::Duration &) override;
 
 private:
+  /*
+   * Compares whether 2 double-precision values are equal to each.
+   *
+   * Parameters:
+   *   num1, num2 (double): Values to compare
+   *
+   * Returns:
+   *   True if num1 == num2; false otherwise.
+   */
+  bool DoubleEquals(const double num1, const double num2) const {
+    return std::fabs(num1 - num2) <= std::numeric_limits<double>::epsilon();
+  }
+
   // Serial connection to the Arduino
   LibSerial::SerialPort arduino_;
 
@@ -77,6 +91,10 @@ private:
 
   // The last time this interface was run
   rclcpp::Time last_run_;
+
+  // Each wheel's last sent velocities (rad/s)
+  double last_left_cmd_  = std::numeric_limits<double>::max();
+  double last_right_cmd_ = std::numeric_limits<double>::max();
 }; // End class RobomagellanInterface
 
 } // End namespace robomagellan_firmware

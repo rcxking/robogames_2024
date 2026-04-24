@@ -26,6 +26,9 @@ The hardware interface plugin is loaded from the robot's URDF
 (`robomagellan.urdf.xacro` within the `robomagellan_description` package).
 
 ## Changelog
+`0.5.0` - `RobomagellanInterface::write()` does not send duplicated motor
+commands.
+
 `0.4.0` - Implemented `RobomagellanInterface::write()` to send desired motor
 elocities to the Arduino.
 
