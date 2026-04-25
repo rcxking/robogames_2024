@@ -103,12 +103,16 @@ void loop() {
     // Is this command for the left or right motor?
     if (next_command.length() > 0) {
       const char target_motor = next_command[0];
+      const double target_motor_vel = next_command.substring(1).toDouble();
+
       if (target_motor == 'L') {
         Serial.println("Received left motor command");
         // Left motor command
+        leftPID.SendPWMCommand(left_wheel_vel_rad_per_sec, target_motor_vel);
       } else if (target_motor == 'R') {
         Serial.println("Received right motor command");
         // Right motor command
+        rightPID.SendPWMCommand(right_wheel_vel_rad_per_sec, target_motor_vel);
       }
     }
   }
