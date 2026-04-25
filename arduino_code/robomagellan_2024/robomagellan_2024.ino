@@ -8,6 +8,9 @@
 // Quadrature Encoders
 #include <Encoder.h>
 
+// PID motor control
+#include "PID.h"
+
 // Enable debug statements?
 #define ENABLE_DEBUGS (0)
 
@@ -29,6 +32,14 @@ constexpr int RIGHT_ENCODER_CHAN_B = 18;
 
 Encoder leftEncoder(LEFT_ENCODER_CHAN_A, LEFT_ENCODER_CHAN_B);
 Encoder rightEncoder(RIGHT_ENCODER_CHAN_A, RIGHT_ENCODER_CHAN_B);
+
+// PID motor controls and constants.
+constexpr double KP = 1.125;
+constexpr double KI = 0.00001;
+constexpr double KD = 25.0;
+
+PID leftPID(KP, KI, KD);
+PID rightPID(KP, KI, KD);
 
 // Last time wheel angular velocities were calculated
 unsigned long last_time_ms = 0;
