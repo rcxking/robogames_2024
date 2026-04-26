@@ -10,6 +10,12 @@ Robotic Parts Suppliers
 2) The Robot Marketplace - https://www.robotmarketplace.com/
 3) CTR Electronics Talon SRX Motor Controller - https://store.ctr-electronics.com/products/talon-srx
 
+Raspberry Pi
+------------
+1) Raspberry Pi GPIO Pinouts - https://pinout.xyz/
+2) Raspberry Pi SPI/I2C Tutorial - https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial
+3) Qwiic Shim for Raspberry Pi Hookup Guide - https://learn.sparkfun.com/tutorials/qwiic-shim-for-raspberry-pi-hookup-guide
+
 Useful ROS Nodes/Packages
 -------------------------
 1) Keyboard Teleop - https://docs.ros.org/en/rolling/p/teleop_twist_keyboard/
@@ -43,6 +49,7 @@ Navigation
 Software Libraries
 ------------------
 1) LibSerial - https://libserial.readthedocs.io/en/latest/index.html
+2) Sparkfun Qwiic Py - https://github.com/sparkfun/Qwiic_Py
 
 Mechanical
 ----------
@@ -68,5 +75,3 @@ twist:
     z: 0.0
 '
 ```
-
-
