@@ -13,6 +13,9 @@ determined change them here.
 `controller_manager`.
 
 ## Changelog
+`0.4.0` - Updating linear/angular velocity limits on the `diff_drive_controller`
+and sent from the joystick node
+
 `0.3.0` - Removed deprecated `diff_drive_controller` `has_jerk_limits`
 
 `0.2.0` - `joy`/`joy_teleop` nodes and configs to connect to an Xbox controller
