@@ -30,12 +30,21 @@ joy_teleop:
       # For the XBOX controller inspection of the /joy topic shows that for the
       # left joystick forward/backwards is axis 1 (0-indexed) and left/right is
       # axis 0 (0-indexed)
+      #
+      # By default an axis scale of 1.0 means that pushing the joystick all the
+      # way in one direction sends a velocity of 1 m/s or rad/s and pushing the
+      # joystick all the way in the other direction sends a velocity of -1 m/s
+      # or rad/s.
+      #
+      # To set the scale properly look at robomagellan_controllers.yaml's
+      # linear/angular min/max velocities; the scale will be whatever these
+      # limits are.
       axis_mappings:
         twist-linear-x:
           axis: 1
-          scale: 1.0
+          scale: 3.0
           offset: 0.0
         twist-angular-z:
           axis: 0
-          scale: 8.0
+          scale: 3.0
           offset: 0.0
