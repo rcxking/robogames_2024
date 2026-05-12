@@ -9,12 +9,20 @@ Robotic Parts Suppliers
 1) West Coast Products (WCP) - https://wcproducts.com/
 2) The Robot Marketplace - https://www.robotmarketplace.com/
 3) CTR Electronics Talon SRX Motor Controller - https://store.ctr-electronics.com/products/talon-srx
+4) CIMCoder 256 Encoder - https://andymark.com/products/cimcoder-256-hi-resolution-cim-encoder
 
 Raspberry Pi
 ------------
 1) Raspberry Pi GPIO Pinouts - https://pinout.xyz/
 2) Raspberry Pi SPI/I2C Tutorial - https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial
 3) Qwiic Shim for Raspberry Pi Hookup Guide - https://learn.sparkfun.com/tutorials/qwiic-shim-for-raspberry-pi-hookup-guide
+
+Arduino
+-------
+1) Arduino Servo Library - https://docs.arduino.cc/libraries/servo/
+2) Arduino Servo Example - https://docs.arduino.cc/learn/electronics/servo-motors/
+3) Arduino Mega 2560 - https://store-usa.arduino.cc/products/arduino-mega-2560-rev3
+4) Using Arduino Uno R4 LED Matrix - https://docs.arduino.cc/tutorials/uno-r4-wifi/led-matrix/
 
 Useful ROS Nodes/Packages
 -------------------------
@@ -74,4 +82,20 @@ twist:
     y: 0.0
     z: 0.0
 '
+```
+
+2) To output a specified field from a ROS2 message use:
+```
+ros2 topic echo <topic name> --field <specified field>
+```
+
+For example to extract the joint velocities use:
+```
+ros2 topic echo /joint_states --field velocity
+```
+
+This will output:
+```
+array('d', [-1.1074603207816835e-05, -1.4269494386098813e-05])
+---
 ```
