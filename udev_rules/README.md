@@ -47,3 +47,5 @@ The following is a list of `udev` rules for the Robomagellan robot:
 `/dev/arduino`.
 2) `99-arduino-uno-r4.rules` - Associates an Arduino Uno R4 to the device file
 `/dev/arduino`.
+3) `99-arduino-uno-r3-clone.rules` - Associates an Arduino Uno R3 clone to the
+device file `/dev/arduino`.

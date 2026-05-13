@@ -1,0 +1,10 @@
+# 99-arduino-uno-r3-clone.rules
+#
+# udev rules file for assigning an Arduino Uno R3 clone to device file
+# /dev/arduino
+#
+# This clone has ID 1a86:7523 (Vendor ID 1a86, Product ID 7523)
+#
+# The rule grants read/write permissions (0666) to the Arduino Uno using the
+# symbolink link /dev/arduino
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", MODE="0666", SYMLINK+="arduino"
