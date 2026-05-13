@@ -42,7 +42,7 @@ To compute each wheel's angular velocity for a given time delta (secs) count the
 number of ticks, multiply the tick count by this tick-to-radians conversion
 factor, and divide by the time delta.
 
-## Software Dependencies
+## Software Setup and Dependencies
 
 We need the [Magnetic Quadrature Encoder Library](https://www.pjrc.com/teensy/td_libs_Encoder.html).  This can be installed within the Arduino IDE's library manager and
 searching for the `Encoder by Paul Stoffregen` library version 1.4.4.
@@ -55,3 +55,14 @@ The Arduino communicates using a serial connection with 115200 baud, 8N1.  Every
 L<left wheel velocity rad/s, 2 decimal places>;R<right wheel velocity rad/s, 2
 decimal places>;
 ```
+
+## Available Programs
+
+The following list are the programs that can be flashed to the Arduino:
+
+1) **robomagellan_2024.ino**: Main competition program.  Listens and processes
+desired motor velocities and computes/returns motor angular velocities via the
+quadrature encoders in radians/second.
+
+2) **talon_srx_repl.ino**: Allows the user to send PWM commands in the range of
+[1000, 2000] microseconds to the Talon SRX motor controllers.
