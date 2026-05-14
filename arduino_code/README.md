@@ -44,6 +44,12 @@ factor, and divide by the time delta.
 
 ## Software Setup and Dependencies
 
+The Arduino IDE's sketchbook location needs to be set to this directory
+(`robogames_2024/arduino_code`) so the custom libraries can be found.  To do so
+in the IDE navigate to `File -> Preferences` and change the `Sketchbook
+location` field.  Make sure to **restart the IDE** for this change to take
+effect.
+
 We need the [Magnetic Quadrature Encoder Library](https://www.pjrc.com/teensy/td_libs_Encoder.html).  This can be installed within the Arduino IDE's library manager and
 searching for the `Encoder by Paul Stoffregen` library version 1.4.4.
 
@@ -55,6 +61,18 @@ The Arduino communicates using a serial connection with 115200 baud, 8N1.  Every
 L<left wheel velocity rad/s, 2 decimal places>;R<right wheel velocity rad/s, 2
 decimal places>;
 ```
+
+## Custom Libraries
+
+The Talon SRX motor controllers take in as input a PWM value (via Arduino's
+`Servo.writeMicroseconds()`) between [1000, 2000].  1500 is the motor **stop**
+command; 2000 is **full forward** and 1000 is **full reverse**.
+
+The following custom libraries (within the `libraries` directory) are as
+follows:
+
+1) **PID.h/.cpp**: PID controls to convert desired wheel velocities in RPM into
+PWM signals.
 
 ## Available Programs
 

@@ -45,3 +45,11 @@ ros_workspace/src/CMakeLists.txt
 ros_workspace/build/
 ros_workspace/devel/
 ros_workspace/src/arduino_connector/src/__pycache__/
+
+# ROS 2 workspace files and directories (contents change on colcon_build)
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Encoder Arduino Library (it's installed via the Arduino IDE Library Manager)
+arduino_code/libraries/Encoder/
