@@ -53,8 +53,6 @@ CallbackReturn RobomagellanInterface::on_init(const hardware_interface::Hardware
   position_states_.reserve(info_.joints.size());
   velocity_states_.reserve(info_.joints.size());
 
-  last_run_ = rclcpp::Clock().now();
-
   return CallbackReturn::SUCCESS;
 }
 
@@ -143,41 +141,58 @@ hardware_interface::return_type RobomagellanInterface::read(const rclcpp::Time &
   // Read the wheel velocities from the Arduino
   if (arduino_.IsDataAvailable()) {
     /*
-     * Time delta between now and the previous time read() was called.  Need
-     * this to integrate the wheel velocities to get wheel position.
-     */
-    const double dt = (rclcpp::Clock().now() - last_run_).seconds();
-
-    /*
      * Arduino sends string of the format:
-     * "L<left wheel vel>;R<right wheel vel>;"
+     * "L<left wheel pos (rad)>,<left wheel vel (rad/s)>;R<right wheel pos
+     * (rad)>,<right wheel vel (rad/s)>;"
      */
-    std::string next_vels;
-    arduino_.ReadLine(next_vels);
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("RobomagellanInterface"),
-        "Received next_vels: " << next_vels);
+    std::string next_info;
+    arduino_.ReadLine(next_info);
+    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("RobomagellanInterface"),
+        "Received next_info: " << next_info);
 
-    std::string token;
-    std::stringstream ss(next_vels);
-    while (std::getline(ss, token, ';')) {
-      // First character is L (left) or R (right) motor.  Ignore everything else
-      const char first_char = token[0];
-
-      if (first_char == 'L') {
-        velocity_states_.at(0) = std::stod(token.substr(1, token.size()));
-        position_states_.at(0) += velocity_states_.at(0) * dt;
-      } else if (first_char == 'R') {
-        velocity_states_.at(1) = std::stod(token.substr(1, token.size()));
-        position_states_.at(1) += velocity_states_.at(1) * dt;
-      } else {
-        // ERROR: Unrecognized character
-        RCLCPP_ERROR_STREAM(rclcpp::get_logger("RobomagellanInterface"),
-            "ERROR: Unrecognized first_char: " << first_char);
+    std::string next_motor_info;
+    std::stringstream ss(next_info);
+    while (std::getline(ss, next_motor_info, ';')) {
+      // Ensure next motor information isn't blank
+      if (next_motor_info.empty()) {
+        RCLCPP_ERROR(rclcpp::get_logger("RobomagellanInterface"),
+            "ERROR: next_motor_info is blank!");
+        continue;
       }
-    }
 
-    // Update last time read() was run
-    last_run_ = rclcpp::Clock().now();
+      // First character is L (left) or R (right) motor.  Ignore everything else
+      const char first_char = next_motor_info[0];
+
+      const bool first_char_l = (first_char == 'L');
+      const bool first_char_r = (first_char == 'R');
+
+      if (first_char_l || first_char_r) {
+        // Extract motor position and velocity
+        const std::string motor_info(next_motor_info.substr(1));
+        std::string next_pos_rads, next_vel_rads_per_sec;
+        std::stringstream ss2(motor_info);
+        std::getline(ss2, next_pos_rads, ',');
+        std::getline(ss2, next_vel_rads_per_sec, ',');
+
+        // Ensure valid position/velocity
+        if (next_pos_rads.empty() || next_vel_rads_per_sec.empty()) {
+          RCLCPP_ERROR_STREAM(rclcpp::get_logger("RobomagellanInterface"),
+              "ERROR: Invalid position and/or velocity! next_pos_rads: " <<
+              next_pos_rads << "; next_vel_rads_per_sec: " <<
+              next_vel_rads_per_sec);
+          continue;
+        }
+
+        // Update position and velocity
+        const size_t idx = (first_char_l) ? 0 : 1;
+        position_states_.at(idx) = std::stod(next_pos_rads);
+        velocity_states_.at(idx) = std::stod(next_vel_rads_per_sec);
+
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("RobomagellanInterface"),
+            "idx: " << idx << "; next_pos_rads: " << next_pos_rads <<
+            "; next_vel_rads_per_sec: " << next_vel_rads_per_sec);
+      } // End if (first_char_l || first_char_r)
+    } // End while (std::getline(ss, next_motor_info, ';'))
   }
   return hardware_interface::return_type::OK;
 }

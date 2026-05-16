@@ -19,6 +19,9 @@ will provide the desired wheel velocities to these hardware interfaces.
 An Arduino Mega connects to the motor controllers and the quadrature encoders.
 This Arduino is connected to the Raspberry Pi 5 via a USB cable.
 
+The Arduino will send through the Serial connection the motors' position (rad)
+and velocity (rad/s).
+
 ## Launch Files
 
 `hardware_interface.launch.py` launches the `ros2_control` `ControllerManager`.
@@ -26,6 +29,9 @@ The hardware interface plugin is loaded from the robot's URDF
 (`robomagellan.urdf.xacro` within the `robomagellan_description` package).
 
 ## Changelog
+`0.6.0` - `RobomagellanInterface::read()` parses motor positions and velocities
+instead of calculating them.
+
 `0.5.0` - `RobomagellanInterface::write()` does not send duplicated motor
 commands.
 
