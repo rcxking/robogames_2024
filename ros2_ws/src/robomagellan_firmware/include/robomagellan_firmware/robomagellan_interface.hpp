@@ -89,9 +89,6 @@ private:
   // Wheel velocities
   std::vector<double> velocity_states_;
 
-  // The last time this interface was run
-  rclcpp::Time last_run_;
-
   // Each wheel's last sent velocities (rad/s)
   double last_left_cmd_  = std::numeric_limits<double>::max();
   double last_right_cmd_ = std::numeric_limits<double>::max();
