@@ -26,6 +26,8 @@ The following is a list of the Python launch files and their purpose:
    competition environment.
 
 ## Changelog
+`0.11.0` - Adding Amazon-provided worlds.
+
 `0.10.0` - Added simulated IMU for Gazebo simulation.
 
 `0.9.0` - `ros2_control.xacro` uses `/dev/arduino` instead of `/dev/ttyUSB0`

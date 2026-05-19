@@ -5,17 +5,26 @@ Starts the Gazebo simulation and spawns the robot into the world.
 """
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
+from pathlib import Path
 
 import os
 
 def generate_launch_description():
     # Directory containing URDF files
     robomagellan_description = get_package_share_directory("robomagellan_description")
+
+    # Parameter specifying the world file to load
+    world_name_arg = DeclareLaunchArgument(
+        name="world_name",
+        default_value=os.path.join(robomagellan_description,
+                                   "worlds",
+                                   "robomagellan_world.world"),
+        description="Absolute path to the sim world file to use")
 
     # Parameter specifying the URDF file to load
     model_arg = DeclareLaunchArgument(name="model", default_value=os.path.join(
@@ -35,20 +44,32 @@ def generate_launch_description():
     )
 
     """
-    Start Gazebo with an empty world.
+    Certain worlds need models stored within the "models" directory.  Need to
+    tell Gazebo where that directory is.
+    """
+    model_path = str(Path(robomagellan_description).parent.resolve())
+    model_path += os.pathsep + os.path.join(get_package_share_directory(
+        "robomagellan_description"), "models")
+
+    gazebo_resource_path = SetEnvironmentVariable(
+        "GZ_SIM_RESOURCE_PATH",
+        model_path
+    )
+
+    """
+    Start Gazebo with the specified world.
 
     Per https://github.com/ros-controls/gz_ros2_control/issues/340 for mimic
     joints to work (used to tie the rear wheels with their respective side's
     front wheels) we need to change the physics engine from DART to Bullet.
     """
-    world_file = str(os.path.join(robomagellan_description, "worlds",
-                                  "robomagellan_world.sdf"))
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory("ros_gz_sim"), "launch"),
             "/gz_sim.launch.py"]),
             launch_arguments=[
-                ("gz_args", [" -v 4", " -r ", world_file, " --physics-engine",
+                ("gz_args", [" -v 4", " -r ", LaunchConfiguration("world_name"),
+                             " --physics-engine",
                              " gz-physics-bullet-featherstone-plugin"])
             ]
     )
@@ -87,6 +108,8 @@ def generate_launch_description():
 
     return LaunchDescription([
         model_arg,
+        world_name_arg,
+        gazebo_resource_path,
         robot_state_publisher_node,
         gazebo,
         gz_spawn_entity,
