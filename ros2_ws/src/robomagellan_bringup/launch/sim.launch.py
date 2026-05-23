@@ -29,6 +29,15 @@ def generate_launch_description():
         )
     )
 
+    # Start the odometry motion model node
+    odometry_motion_model = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("robomagellan_localization"),
+            "launch",
+            "odometry_motion_model.launch.py"
+        )
+    )
+
     # Start the joystick teleop nodes.  TODO: Use keyboard teleop node instead?
     joystick = IncludeLaunchDescription(
         os.path.join(
@@ -55,6 +64,7 @@ def generate_launch_description():
     return LaunchDescription([
         gazebo,
         controller,
+        odometry_motion_model,
         joystick,
         rviz
     ])
