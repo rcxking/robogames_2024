@@ -26,6 +26,9 @@ The following is a list of the Python launch files and their purpose:
    competition environment.
 
 ## Changelog
+`0.12.0` - Updating `sim.rviz` to display the particle cloud from the odometry
+motion model.
+
 `0.11.0` - Adding Amazon-provided worlds.
 
 `0.10.0` - Added simulated IMU for Gazebo simulation.
