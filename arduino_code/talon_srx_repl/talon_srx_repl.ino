@@ -8,8 +8,8 @@
 #include <Servo.h>
 
 // SRX motor controller pins (should be PWM)
-constexpr int LEFT_CONTROLLER_PIN  = 9;
-constexpr int RIGHT_CONTROLLER_PIN = 10;
+constexpr int LEFT_CONTROLLER_PIN  = 10;
+constexpr int RIGHT_CONTROLLER_PIN = 9;
 
 // Servo objects (1 for each controller)
 Servo leftServo, rightServo;
