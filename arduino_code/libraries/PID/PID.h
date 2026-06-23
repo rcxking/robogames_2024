@@ -19,10 +19,21 @@ public:
    *   kp (double): Proportional constant
    *   ki (double): Integral constant
    *   kd (double): Derivative constant
-   *   motor_pin (int): Arduino pin connected to the motor controller
    */
-  PID(const double kp, const double ki, const double kd, const int motor_pin) :
+  PID(const double kp, const double ki, const double kd) :
     kp_(kp), ki_(ki), kd_(kd) {
+  }
+
+  /*
+   * Initializes the underlying Servo object to the specified motor pin.
+   *
+   * Parameters:
+   *   motor_pin (int): Pin to attach to
+   */
+  void ConnectToMotor(const int motor_pin) {
+    Serial.print("Attaching Servo controller_ to pin: ");
+    Serial.println(motor_pin);
+
     // Connect to the specified motor controller
     controller_.attach(motor_pin);
 

@@ -62,8 +62,8 @@ double        KD                   = 25.0;
 constexpr int LEFT_CONTROLLER_PIN  = 10;
 constexpr int RIGHT_CONTROLLER_PIN = 9;
 
-PID leftPID(KP, KI, KD, LEFT_CONTROLLER_PIN);
-PID rightPID(KP, KI, KD, RIGHT_CONTROLLER_PIN);
+PID leftPID(KP, KI, KD);
+PID rightPID(KP, KI, KD);
 
 void setup() {
   // Begin serial terminal connection
@@ -82,6 +82,10 @@ void setup() {
   // Reset encoder counts
   leftEncoder.write(0);
   rightEncoder.write(0);
+
+  // Attach to motors
+  leftPID.ConnectToMotor(LEFT_CONTROLLER_PIN);
+  rightPID.ConnectToMotor(RIGHT_CONTROLLER_PIN);
 }
 
 void loop() {
