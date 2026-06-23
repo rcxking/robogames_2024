@@ -114,22 +114,22 @@ void loop() {
      */
     if (nextCommand.length() >= 2) {
       const char directive = nextCommand[0];
-      const int value = nextCommand.substring(1).toFloat();
+      const double value = nextCommand.substring(1).toFloat();
 
       if (directive == 'L') {
         // Send desired left motor velocity
         Serial.print("Writing to left motor rad/s: ");
-        Serial.println(value);
+        Serial.println(value, 9);
         leftPID.SendPWMCommand(left_wheel_vel_rad_per_sec, value);
       } else if (directive == 'R') {
         // Send desired right motor velocity
         Serial.print("Writing to right motor rad/s: ");
-        Serial.println(value);
+        Serial.println(value, 9);
         rightPID.SendPWMCommand(right_wheel_vel_rad_per_sec, value);
       } else if (directive == 'P') {
         // Update proportional constants
         Serial.print("Updating KP to: ");
-        Serial.println(value);
+        Serial.println(value, 9);
         leftPID.SetKP(value);
         rightPID.SetKP(value);
         Serial.println("leftPID constants: " + leftPID.DisplayPIDConstants());
@@ -137,7 +137,7 @@ void loop() {
       } else if (directive == 'I') {
         // Update integral constants
         Serial.print("Updating KI to: ");
-        Serial.println(value);
+        Serial.println(value, 9);
         leftPID.SetKI(value);
         rightPID.SetKI(value);
         Serial.println("leftPID constants: " + leftPID.DisplayPIDConstants());
@@ -145,7 +145,7 @@ void loop() {
       } else if (directive == 'D') {
         // Update derivative constants
         Serial.print("Updating KD to: ");
-        Serial.println(value);
+        Serial.println(value, 9);
         leftPID.SetKD(value);
         rightPID.SetKD(value);
         Serial.println("leftPID constants: " + leftPID.DisplayPIDConstants());

@@ -62,8 +62,8 @@ public:
 
   // Displays the current PID constants' values
   String DisplayPIDConstants() const {
-    return "KP: " + String(kp_) + "; KI: " + String(ki_) + "; KD: "
-      + String(kd_);
+    return "KP: " + String(kp_, 9) + "; KI: " + String(ki_, 9) + "; KD: "
+      + String(kd_, 9);
   }
 
 private:
