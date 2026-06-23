@@ -59,8 +59,8 @@ const double TICKS_TO_RADIANS = (11.0 * PI / 720.0);
 double        KP                   = 1.125;
 double        KI                   = 0.00001;
 double        KD                   = 25.0;
-constexpr int LEFT_CONTROLLER_PIN  = 9;
-constexpr int RIGHT_CONTROLLER_PIN = 10;
+constexpr int LEFT_CONTROLLER_PIN  = 10;
+constexpr int RIGHT_CONTROLLER_PIN = 9;
 
 PID leftPID(KP, KI, KD, LEFT_CONTROLLER_PIN);
 PID rightPID(KP, KI, KD, RIGHT_CONTROLLER_PIN);
