@@ -117,15 +117,15 @@ void loop() {
       const double value = nextCommand.substring(1).toFloat();
 
       if (directive == 'L') {
-        // Send desired left motor velocity
-        Serial.print("Writing to left motor rad/s: ");
+        // Set desired left motor velocity
+        Serial.print("Setting desired left motor rad/s: ");
         Serial.println(value, 9);
-        leftPID.SendPWMCommand(left_wheel_vel_rad_per_sec, value);
+        leftPID.SetDesiredVelocity(value);
       } else if (directive == 'R') {
-        // Send desired right motor velocity
-        Serial.print("Writing to right motor rad/s: ");
+        // Set desired right motor velocity
+        Serial.print("Setting desired right motor rad/s: ");
         Serial.println(value, 9);
-        rightPID.SendPWMCommand(right_wheel_vel_rad_per_sec, value);
+        rightPID.SetDesiredVelocity(value);
       } else if (directive == 'P') {
         // Update proportional constants
         Serial.print("Updating KP to: ");
@@ -177,6 +177,10 @@ void loop() {
     // Reset encoder counts for next cycle
     leftEncoder.write(0);
     rightEncoder.write(0);
+
+    // Compute and send the next desired motor velocities
+    leftPID.SendPWMCommand(left_wheel_vel_rad_per_sec);
+    rightPID.SendPWMCommand(right_wheel_vel_rad_per_sec);
 
     // Update last time wheel velocities were computed
     last_time_ms = current_time_ms;

@@ -6,7 +6,7 @@
  */
 #include "PID.h"
 
-void PID::SendPWMCommand(const double cur_vel, const double des_vel) {
+void PID::SendPWMCommand(const double cur_vel) {
   /*
    * Compute the error between the desired and current velocities (des - cur).
    * If the difference is positive, the current velocity is less than the
@@ -15,7 +15,14 @@ void PID::SendPWMCommand(const double cur_vel, const double des_vel) {
    * motor needs to slow down.  At a difference of 0 no additional changes need
    * to be made.
    */
-  const double error = des_vel - cur_vel;
+  Serial.print("Current velocity (rad/s): ");
+  Serial.print(cur_vel, 9);
+  Serial.print(" Desired velocity (rad/s): ");
+  Serial.println(des_vel_, 9);
+
+  const double error = des_vel_ - cur_vel;
+  Serial.print("Computed error (rad/s): ");
+  Serial.println(error, 9);
 
   // Add to accumulated errors integral term
   accumulated_error_ += (ki_ * error);

@@ -21,7 +21,7 @@ public:
    *   kd (double): Derivative constant
    */
   PID(const double kp, const double ki, const double kd) :
-    kp_(kp), ki_(ki), kd_(kd) {
+    des_vel_(0.0), kp_(kp), ki_(ki), kd_(kd) {
   }
 
   /*
@@ -42,14 +42,17 @@ public:
   }
 
   /*
-   * Given the current and desired motor velocities compute and send the next
-   * PWM motor command to the motor controller.
+   * Given the current compute and send the next PWM motor command to the motor
+   * controller.  Desired velocity used is des_vel_.
    *
    * Parameters:
    *   cur_vel (double): Current wheel velocity (rad/s)
-   *   des_vel (double): Desired wheel velocity (rad/s)
    */
-  void SendPWMCommand(const double cur_vel, const double des_vel);
+  void SendPWMCommand(const double cur_vel);
+
+  // Accessor/modifier for desired velocity (rad/s)
+  void SetDesiredVelocity(const double des_vel) { des_vel_ = des_vel; }
+  double GetDesiredVelocity() const { return des_vel_; }
 
   // Accessors/modifiers for PID constants.  Used when tuning PID constants
   void SetKP(const double kp) { kp_ = kp; }
@@ -67,6 +70,9 @@ public:
   }
 
 private:
+  // Desired velocity (rad/s)
+  double des_vel_ = 0.0;
+
   // Proportional, integral, derivative constants
   double kp_ = 0.0;
   double ki_ = 0.0;
