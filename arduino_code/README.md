@@ -74,6 +74,9 @@ follows:
 1) **PID.h/.cpp**: PID controls to convert desired wheel velocities in RPM into
 PWM signals.
 
+2) **AveragingBuffer.h**: Averaging buffer class to help average out robot
+encoder values.  This filters out encoder aliasing.
+
 ## Available Programs
 
 The following list are the programs that can be flashed to the Arduino:
