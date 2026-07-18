@@ -63,7 +63,7 @@ namespace ordlidar
 		* @return None
 		*/
 		void Disconnect();
-		
+
 		/**
 		* @brief Judge whether the LiDAR serial port is open
 		* @return true if connected, otherwise false.
@@ -91,7 +91,7 @@ namespace ordlidar
 		bool GrabOneScan(one_scan_data_st &scan_data);
 
 		/**
-		* @brief Blocking access to the latest packet of point cloud data. 
+		* @brief Blocking access to the latest packet of point cloud data.
 		*		Point cloud data contains the angle, distance and intensity information of all points
 		* @param[out] scan_data           LiDAR Scan Sata
 		* @param[in] timeout_ms          timeout ,uint:ms
@@ -100,7 +100,7 @@ namespace ordlidar
 		bool GrabOneScanBlocking(one_scan_data_st &scan_data, int timeout_ms);
 
 		/**
-		* @brief Non-blocking access to the latest circle of point cloud data. 
+		* @brief Non-blocking access to the latest circle of point cloud data.
 		*		Point cloud data contains the angle, distance and intensity information of all points
 		* @param[out] scan_data           LiDAR Scan Sata
 		* @return true if get scan data successfully, otherwise false.
@@ -108,7 +108,7 @@ namespace ordlidar
 		bool GrabFullScan(full_scan_data_st &scan_data);
 
 		/**
-		* @brief Blocking access to the latest circle of point cloud data. 
+		* @brief Blocking access to the latest circle of point cloud data.
 		*		Point cloud data contains the angle, distance and intensity information of all points
 		* @param[out] scan_data           LiDAR Scan Sata
 		* @param[in] timeout_ms          timeout ,uint:ms
@@ -130,22 +130,22 @@ namespace ordlidar
 
 		/**
 		* @brief Set motor speed
-		* @param[in] speed       motor speed,unit:Hz   
+		* @param[in] speed       motor speed,unit:Hz
 		* @return true if set successfully, otherwise false.
 		*/
 		bool SetRotationSpeed(int speed);
 
 		/**
 		* @brief Get the firmware version number of the top and bottom boards
-		* @param[out] top_fw_version       top board firmware version   
-		* @param[out] bot_fw_version       bottom board firmware version   
+		* @param[out] top_fw_version       top board firmware version
+		* @param[out] bot_fw_version       bottom board firmware version
 		* @return true if get successfully, otherwise false.
 		*/
 		bool GetFirmwareVersion(std::string &top_fw_version, std::string &bot_fw_version);
 
 		/**
 		* @brief Get LiDAR Device SN
-		* @param[out] device_sn       LiDAR Device SN  
+		* @param[out] device_sn       LiDAR Device SN
 		* @return true if get successfully, otherwise false.
 		*/
 		bool GetDeviceSN(std::string &device_sn);
@@ -155,7 +155,7 @@ namespace ordlidar
 		int read(unsigned char *data, int length);
 		int write(unsigned char *data, int length);
 		bool uart_data_handle(unsigned char *data, int len);
-		bool uart_data_find_init_info(unsigned char *data, int len);
+		void uart_data_find_init_info(unsigned char *data, int len);
 		bool IsFullScanReady(void) { return full_scan_ready_; }
 		void ResetFullScanReady(void) { full_scan_ready_ = false; }
 		bool IsOneScanReady(void) { return one_scan_ready_; }

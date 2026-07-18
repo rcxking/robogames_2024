@@ -102,7 +102,7 @@ namespace ordlidar
 		return is_connected_;
 	}
 
-	bool OrdlidarDriver::uart_data_find_init_info(unsigned char *data, int len)
+	void OrdlidarDriver::uart_data_find_init_info(unsigned char *data, int len)
 	{
 		cmd_buf_.insert(cmd_buf_.end(), data, data + len);
 		int cmd_buf_len = cmd_buf_.size();
@@ -134,7 +134,7 @@ namespace ordlidar
 		}
 
 		tmp_buf_len = cmd_buf_.size();
-		if(head_flag && (tmp_buf_len > 3))	
+		if(head_flag && (tmp_buf_len > 3))
 		{
 			cur_cmd = cmd_buf_[2];
 			data_len = cmd_buf_[3];
@@ -391,7 +391,7 @@ namespace ordlidar
 						break;
 					}
 					}
-					
+
 				}
 			}
 			else
@@ -413,7 +413,7 @@ namespace ordlidar
 		float step = diff / (POINT_PER_PACK - 1) / 100.0;
 		float start = (double)pkg->start_angle / 100.0;
         float end = (double)(pkg->end_angle % 36000) / 100.0;
-		
+
 		for (int i = 0; i < POINT_PER_PACK; i++)
 		{
 			data[i].distance = pkg->point[i].distance;
