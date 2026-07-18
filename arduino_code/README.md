@@ -87,3 +87,7 @@ quadrature encoders in radians/second.
 
 2) **talon_srx_repl.ino**: Allows the user to send PWM commands in the range of
 [1000, 2000] microseconds to the Talon SRX motor controllers.
+
+3) **pid_tuning.ino**: Used to help tune motor controllers' PID constants.
+Listens for desired motor velocities and motor constant changes.  These are used
+to compute the next motor command to each motor.

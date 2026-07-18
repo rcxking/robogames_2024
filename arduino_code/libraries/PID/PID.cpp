@@ -6,7 +6,7 @@
  */
 #include "PID.h"
 
-void PID::SendPWMCommand(const double cur_vel, const double des_vel) {
+void PID::SendPWMCommand(const double cur_vel) {
   /*
    * Compute the error between the desired and current velocities (des - cur).
    * If the difference is positive, the current velocity is less than the
@@ -15,7 +15,16 @@ void PID::SendPWMCommand(const double cur_vel, const double des_vel) {
    * motor needs to slow down.  At a difference of 0 no additional changes need
    * to be made.
    */
-  const double error = des_vel - cur_vel;
+#if 0
+  Serial.print("Current velocity (rad/s): ");
+  Serial.print(cur_vel, 9);
+  Serial.print(" Desired velocity (rad/s): ");
+  Serial.println(des_vel_, 9);
+#endif
+
+  const double error = des_vel_ - cur_vel;
+  //Serial.print("Computed error (rad/s): ");
+  //Serial.println(error, 9);
 
   // Add to accumulated errors integral term
   accumulated_error_ += (ki_ * error);
@@ -26,6 +35,8 @@ void PID::SendPWMCommand(const double cur_vel, const double des_vel) {
   // Apply proportional constants to determine the change in velocity (rad/s)
   const double delta_vel_rad_per_sec = (kp_ * error) + (accumulated_error_) +
                                        (kd_ * deriv);
+  //Serial.print("delta_vel_rad_per_sec: ");
+  //Serial.println(delta_vel_rad_per_sec);
 
   // Update last error
   prev_error_ = error;
@@ -34,9 +45,12 @@ void PID::SendPWMCommand(const double cur_vel, const double des_vel) {
   cur_pwm_cmd_ += delta_vel_rad_per_sec;
 
   // Threshold current PWM command to be in range [1000, 2000]
-  cur_pwm_cmd_ = max(1000, cur_pwm_cmd_);
-  cur_pwm_cmd_ = min(2000, cur_pwm_cmd_);
+  cur_pwm_cmd_ = max(1000.0, cur_pwm_cmd_);
+  cur_pwm_cmd_ = min(2000.0, cur_pwm_cmd_);
+
+  //Serial.print("cur_pwm_cmd_: ");
+  //Serial.println(cur_pwm_cmd_);
 
   // Arduino Servo.writeMicroseconds() uses range [1000, 2000]
-  controller_.writeMicroseconds(cur_pwm_cmd_);
+  controller_.writeMicroseconds(static_cast<uint16_t>(cur_pwm_cmd_));
 }
